@@ -22,9 +22,9 @@
     <button onclick="nextStep(1)">Next</button>
   </div>
 
-  <!-- Step 2: Financial Aid -->
+  <!-- Step 2: Financial Aid (only if SC/SPR) -->
   <div class="step" id="step2">
-    <h3>Do you receive financial aid? (SC/SPR only)</h3>
+    <h3>Are you eligible for financial aid? (SC/SPR only)</h3>
     <label><input type="radio" name="aid" value="none" checked> No</label><br>
     <label><input type="radio" name="aid" value="yes"> Yes (up to $15,000)</label><br>
     <button onclick="prevStep(2)">Back</button>
@@ -52,6 +52,19 @@
 
     function nextStep(current) {
       document.getElementById("step" + current).classList.remove("active");
+
+      if (current === 1) {
+        let status = document.querySelector("input[name='status']:checked").value;
+        if (status === "intl") {
+          // skip financial aid, go straight to alumni
+          document.getElementById("step3").classList.add("active");
+          return;
+        } else {
+          document.getElementById("step2").classList.add("active");
+          return;
+        }
+      }
+
       if (current < 3) {
         document.getElementById("step" + (current + 1)).classList.add("active");
       } else {
@@ -62,20 +75,31 @@
 
     function prevStep(current) {
       document.getElementById("step" + current).classList.remove("active");
+
+      if (current === 3) {
+        let status = document.querySelector("input[name='status']:checked").value;
+        if (status === "intl") {
+          document.getElementById("step1").classList.add("active"); // intl skips aid
+        } else {
+          document.getElementById("step2").classList.add("active");
+        }
+        return;
+      }
+
       document.getElementById("step" + (current - 1)).classList.add("active");
     }
 
     function calcTuition() {
       let tuition = tuitionBase;
       let status = document.querySelector("input[name='status']:checked").value;
-      let aid = document.querySelector("input[name='aid']:checked").value;
       let alumni = document.querySelector("input[name='alumni']:checked").value;
 
       if (status === "scspr") {
         tuition -= 5000; // base subsidy
-        if (aid === "yes") tuition -= 15000; // financial aid
+        let aid = document.querySelector("input[name='aid']:checked").value;
+        if (aid === "yes") tuition -= 15000;
       }
-      if (alumni === "yes") tuition *= 0.9; // 10% rebate
+      if (alumni === "yes") tuition *= 0.9;
 
       document.getElementById("tuitionResult").innerHTML =
         `<b>S$${tuition.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</b>`;
