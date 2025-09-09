@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cost of Living Calculator</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; }
+  .step { display: none; margin-bottom: 20px; }
+  .step.active { display: block; }
+  button { padding: 10px 20px; margin-top: 10px; }
+  .option { margin: 10px 0; }
+</style>
+</head>
+<body>
+  <h1>Cost of Living Calculator</h1>
+
+  <div id="step1" class="step active">
+    <h2>Accommodation</h2>
+    <p>Select your preferred type of rented accommodation:</p>
+    <div class="option"><input type="radio" name="accommodation" value="1000"> HDB Room ($1,000)</div>
+    <div class="option"><input type="radio" name="accommodation" value="1500"> HDB Flat ($1,500)</div>
+    <div class="option"><input type="radio" name="accommodation" value="2500"> Private Apartment ($2,500)</div>
+    <button onclick="nextStep(1)">Next</button>
+  </div>
+
+  <div id="step2" class="step">
+    <h2>Food</h2>
+    <p>Average monthly food expenses:</p>
+    <div class="option"><input type="radio" name="food" value="300"> $300</div>
+    <div class="option"><input type="radio" name="food" value="500"> $500</div>
+    <div class="option"><input type="radio" name="food" value="700"> $700</div>
+    <button onclick="nextStep(2)">Next</button>
+  </div>
+
+  <div id="result" class="step">
+    <h2>Estimated Monthly Cost</h2>
+    <p id="totalCost"></p>
+    <button onclick="restart()">Start Over</button>
+  </div>
+
+<script>
+const selections = {};
+
+function nextStep(step) {
+  if(step === 1) {
+    const choice = document.querySelector('input[name="accommodation"]:checked');
+    if(!choice) { alert("Please select an option."); return; }
+    selections.accommodation = parseInt(choice.value);
+    document.getElementById('step1').classList.remove('active');
+    document.getElementById('step2').classList.add('active');
+  } else if(step === 2) {
+    const choice = document.querySelector('input[name="food"]:checked');
+    if(!choice) { alert("Please select an option."); return; }
+    selections.food = parseInt(choice.value);
+    document.getElementById('step2').classList.remove('active');
+    document.getElementById('result').classList.add('active');
+    showResult();
+  }
+}
+
+function showResult() {
+  const total = (selections.accommodation || 0) + (selections.food || 0);
+  document.getElementById('totalCost').innerText = "$" + total + " per month";
+}
+
+function restart() {
+  selections.accommodation = 0;
+  selections.food = 0;
+  document.getElementById('result').classList.remove('active');
+  document.getElementById('step1').classList.add('active');
+  document.querySelectorAll('input[type=radio]').forEach(r => r.checked = false);
+}
+</script>
+</body>
+</html>
