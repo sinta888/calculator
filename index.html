@@ -1,187 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cost of Living Calculator</title>
-<style>
-  body { font-family: Arial, sans-serif; max-width: 700px; margin: auto; padding: 20px; }
-  .step { display: none; margin-bottom: 20px; }
-  .step.active { display: block; }
-  button { padding: 10px 20px; margin-top: 10px; }
-  .option { margin: 10px 0; }
-</style>
+  <meta charset="UTF-8">
+  <title>NTU Cost of Living & Tuition Fee Calculator</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.5; }
+    h2 { margin-top: 40px; }
+    .section { margin-bottom: 30px; }
+    .options label { display: block; margin: 6px 0; }
+    button { margin-top: 20px; padding: 10px 20px; cursor: pointer; }
+    .result { margin-top: 30px; padding: 15px; border: 1px solid #ccc; background: #f9f9f9; }
+  </style>
 </head>
 <body>
-  <h1>Cost of Living Calculator</h1>
+  <h1>NTU Cost of Living & Tuition Fee Calculator</h1>
 
-  <!-- Step 1: Accommodation -->
-  <div id="step1" class="step active">
-    <h2>Accommodation</h2>
-    <p>Select your preferred type of rented accommodation:</p>
-    <div class="option"><input type="radio" name="accommodation" value="1650"> A room in a condominium ($900–$2,650)</div>
-    <div class="option"><input type="radio" name="accommodation" value="1350"> A room in a government flat ($500–$2,200)</div>
-    <div class="option"><input type="radio" name="accommodation" value="3050"> A studio unit in a condominium ($1,599–$4,500)</div>
-    <div class="option"><input type="radio" name="accommodation" value="5300"> A condominium unit with two bedrooms ($3,300–$7,300)</div>
-    <div class="option"><input type="radio" name="accommodation" value="2950"> A government flat with two bedrooms ($2,700–$3,200)</div>
-    <div class="option"><input type="radio" name="accommodation" value="8000"> Landed property ($6,000–$10,000)</div>
-    <button onclick="nextStep(1)">Next</button>
+  <!-- Section 1: Cost of Living -->
+  <h2>1. Cost of Living</h2>
+
+  <div class="section" id="accommodation">
+    <h3>Accommodation</h3>
+    <label><input type="radio" name="accom" data-min="470" data-max="688"> On-campus ($470 – $688)</label>
+    <label><input type="radio" name="accom" data-min="900" data-max="2650"> Room in a condominium ($900 – $2,650)</label>
+    <label><input type="radio" name="accom" data-min="500" data-max="2200"> Room in a government flat ($500 – $2,200)</label>
+    <label><input type="radio" name="accom" data-min="1599" data-max="4500"> Studio in a condominium ($1,599 – $4,500)</label>
+    <label><input type="radio" name="accom" data-min="3300" data-max="7300"> Condo, 2 bedrooms ($3,300 – $7,300)</label>
+    <label><input type="radio" name="accom" data-min="2700" data-max="3200"> HDB flat, 2 bedrooms ($2,700 – $3,200)</label>
+    <label><input type="radio" name="accom" data-min="6000" data-max="10000"> Landed property ($6,000 – $10,000)</label>
   </div>
 
-  <!-- Step 2: Medical -->
-  <div id="step2" class="step">
-    <h2>Medical Treatment</h2>
-    <p>Select preferred location for medical treatment:</p>
-    <div class="option"><input type="radio" name="medical" value="158"> Public clinics (non-residents) ($79–$120 per visit; $158–$240 monthly)</div>
-    <div class="option"><input type="radio" name="medical" value="86"> Public clinics (permanent residents) ($36–$50 per visit; $72–$100 monthly)</div>
-    <div class="option"><input type="radio" name="medical" value="130"> Private clinics ($30–$55 per visit; $60–$200 monthly)</div>
-    <button onclick="nextStep(2)">Next</button>
+  <div class="section" id="medical">
+    <h3>Medical</h3>
+    <label><input type="radio" name="medical" data-min="158" data-max="240"> Public clinics (non-residents) ($158 – $240 monthly)</label>
+    <label><input type="radio" name="medical" data-min="72" data-max="100"> Public clinics (permanent residents) ($72 – $100 monthly)</label>
+    <label><input type="radio" name="medical" data-min="60" data-max="200"> Private clinics ($60 – $200 monthly)</label>
   </div>
 
-  <!-- Step 3: Transport -->
-  <div id="step3" class="step">
-    <h2>Transport</h2>
-    <p>Select your main mode of transport:</p>
-    <div class="option"><input type="radio" name="transport" value="93"> Public transport (buses & trains) ($66–$120)</div>
-    <div class="option"><input type="radio" name="transport" value="900"> Taxis ($900)</div>
-    <div class="option"><input type="radio" name="transport" value="3030"> Personal vehicle ($2,560–$3,500)</div>
-    <button onclick="nextStep(3)">Next</button>
+  <div class="section" id="transport">
+    <h3>Transport</h3>
+    <label><input type="radio" name="transport" data-min="66" data-max="120"> Public transport ($66 – $120)</label>
+    <label><input type="radio" name="transport" data-min="900" data-max="900"> Taxis ($900)</label>
+    <label><input type="radio" name="transport" data-min="2560" data-max="3500"> Personal vehicle ($2,560 – $3,500)</label>
   </div>
 
-  <!-- Step 4: Food -->
-  <div id="step4" class="step">
-    <h2>Food</h2>
-    <p>Select your price range of daily meals:</p>
-    <div class="option"><input type="radio" name="food" value="180"> Budget (food centres & coffeeshops) ($3.5–$8 per meal/person)</div>
-    <div class="option"><input type="radio" name="food" value="1600"> Mid-priced (family restaurants, family of 4–5) ($28–$50 per meal/person)</div>
-    <div class="option"><input type="radio" name="food" value="304"> Luxury (fine dining) ($128–$480 per meal/person)</div>
-    <div class="option"><input type="radio" name="food" value="188"> Homecooked meals (per person for meat & vegetables) ($150–$225 monthly)</div>
-    <div class="option"><input type="radio" name="food" value="621"> Homecooked food delivery ($510–$732 monthly)</div>
-    <button onclick="nextStep(4)">Next</button>
+  <div class="section" id="meals">
+    <h3>Meals</h3>
+    <label><input type="radio" name="meals" data-min="315" data-max="720"> Budget ($3.5 – $8 per meal, ~90 meals)</label>
+    <label><input type="radio" name="meals" data-min="2520" data-max="4500"> Mid-priced, family (~90 meals, $28 – $50)</label>
+    <label><input type="radio" name="meals" data-min="11520" data-max="43200"> Luxury fine dining (~90 meals, $128 – $480)</label>
+    <label><input type="radio" name="meals" data-min="150" data-max="225"> Homecooked ($150 – $225 monthly)</label>
+    <label><input type="radio" name="meals" data-min="510" data-max="732"> Homecooked delivery ($510 – $732)</label>
   </div>
 
-  <!-- Step 5: Apparel & Footwear -->
-  <div id="step5" class="step">
-    <h2>Apparel & Footwear</h2>
-    <p>Select your price range for apparel and footwear:</p>
-    <div class="option"><input type="radio" name="apparel" value="29.5"> Budget brands ($8.9–$48)</div>
-    <div class="option"><input type="radio" name="apparel" value="134.5"> Mid-range brands ($50–$219)</div>
-    <div class="option"><input type="radio" name="apparel" value="1310"> Luxury brands ($390–$2,230)</div>
-    <button onclick="nextStep(5)">Next</button>
+  <div class="section" id="apparel">
+    <h3>Apparel & Footwear</h3>
+    <label><input type="radio" name="apparel" data-min="8.9" data-max="48"> Budget brands ($8.9 – $48)</label>
+    <label><input type="radio" name="apparel" data-min="50" data-max="219"> Mid-range ($50 – $219)</label>
+    <label><input type="radio" name="apparel" data-min="390" data-max="2230"> Luxury ($390 – $2,230)</label>
   </div>
 
-  <!-- Step 6: Communications & Home Entertainment -->
-  <div id="step6" class="step">
-    <h2>Communications & Home Entertainment</h2>
-    <p>Select all services that will be required:</p>
-    <div class="option"><input type="checkbox" name="comm" value="40"> Internet access ($30–$50)</div>
-    <div class="option"><input type="checkbox" name="comm" value="45"> Mobile phone plan ($10–$80)</div>
-    <div class="option"><input type="checkbox" name="comm" value="55"> Streaming subscriptions ($43–$67)</div>
-    <div class="option"><input type="checkbox" name="comm" value="140"> All of the above</div>
-    <button onclick="nextStep(6)">Next</button>
+  <div class="section" id="comm">
+    <h3>Communications & Home Entertainment (multi-select)</h3>
+    <label><input type="checkbox" name="comm" data-min="30" data-max="50"> Internet ($30 – $50)</label>
+    <label><input type="checkbox" name="comm" data-min="10" data-max="80"> Mobile ($10 – $80)</label>
+    <label><input type="checkbox" name="comm" data-min="43" data-max="67"> Streaming ($43 – $67)</label>
+    <label><input type="checkbox" name="comm" data-all="true"> All of the above</label>
   </div>
 
-  <!-- Step 7: Recreational Activities -->
-  <div id="step7" class="step">
-    <h2>Recreational Activities</h2>
-    <p>Select all recreational activities that might need to be catered for:</p>
-    <div class="option"><input type="checkbox" name="recreation" value="11"> Movies ($8.5–$13.5)</div>
-    <div class="option"><input type="checkbox" name="recreation" value="130"> Clubbing ($110–$150 per visit)</div>
-    <div class="option"><input type="checkbox" name="recreation" value="18.5"> Art & museum exhibitions ($10–$27)</div>
-    <div class="option"><input type="checkbox" name="recreation" value="190.5"> Plays, musicals & concerts ($78–$303)</div>
-    <div class="option"><input type="checkbox" name="recreation" value="59.5"> Theme parks & zoos ($34–$85)</div>
-    <div class="option"><input type="checkbox" name="recreation" value="409.5"> All of the above</div>
-    <button onclick="nextStep(7)">Next</button>
+  <div class="section" id="recreation">
+    <h3>Recreation (multi-select)</h3>
+    <label><input type="checkbox" name="recreation" data-min="8.5" data-max="13.5"> Movies</label>
+    <label><input type="checkbox" name="recreation" data-min="110" data-max="150"> Clubbing</label>
+    <label><input type="checkbox" name="recreation" data-min="10" data-max="27"> Art & museums</label>
+    <label><input type="checkbox" name="recreation" data-min="78" data-max="303"> Concerts</label>
+    <label><input type="checkbox" name="recreation" data-min="34" data-max="85"> Theme parks & zoos</label>
+    <label><input type="checkbox" name="recreation" data-all="true"> All of the above</label>
   </div>
 
-  <!-- Result -->
-  <div id="result" class="step">
-    <h2>Estimated Monthly Cost</h2>
-    <p id="totalCost"></p>
-    <button onclick="restart()">Start Over</button>
+  <button onclick="calcLiving()">Calculate Cost of Living</button>
+
+  <div class="result" id="livingResult"></div>
+
+  <!-- Section 2: Tuition Fees -->
+  <h2>2. Tuition Fees</h2>
+
+  <div class="section" id="tuition">
+    <h3>Select Status</h3>
+    <label><input type="radio" name="status" value="intl"> International Student</label>
+    <label><input type="radio" name="status" value="scspr"> Singapore Citizen / Permanent Resident</label>
+
+    <h3>Financial Aid (SC/SPR only)</h3>
+    <label><input type="radio" name="aid" value="none" checked> None</label>
+    <label><input type="radio" name="aid" value="yes"> Yes (up to $15,000)</label>
+
+    <h3>NTU Alumni?</h3>
+    <label><input type="checkbox" id="alumni"> Yes</label>
   </div>
 
-<script>
-const selections = {};
+  <button onclick="calcTuition()">Calculate Tuition Fees</button>
 
-function nextStep(step) {
-  if(step === 1) {
-    const choice = document.querySelector('input[name="accommodation"]:checked');
-    if(!choice) { alert("Please select an option."); return; }
-    selections.accommodation = parseFloat(choice.value);
-    document.getElementById('step1').classList.remove('active');
-    document.getElementById('step2').classList.add('active');
-  } else if(step === 2) {
-    const choice = document.querySelector('input[name="medical"]:checked');
-    if(!choice) { alert("Please select an option."); return; }
-    selections.medical = parseFloat(choice.value);
-    document.getElementById('step2').classList.remove('active');
-    document.getElementById('step3').classList.add('active');
-  } else if(step === 3) {
-    const choice = document.querySelector('input[name="transport"]:checked');
-    if(!choice) { alert("Please select an option."); return; }
-    selections.transport = parseFloat(choice.value);
-    document.getElementById('step3').classList.remove('active');
-    document.getElementById('step4').classList.add('active');
-  } else if(step === 4) {
-    const choice = document.querySelector('input[name="food"]:checked');
-    if(!choice) { alert("Please select an option."); return; }
-    selections.food = parseFloat(choice.value);
-    document.getElementById('step4').classList.remove('active');
-    document.getElementById('step5').classList.add('active');
-  } else if(step === 5) {
-    const choice = document.querySelector('input[name="apparel"]:checked');
-    if(!choice) { alert("Please select an option."); return; }
-    selections.apparel = parseFloat(choice.value);
-    document.getElementById('step5').classList.remove('active');
-    document.getElementById('step6').classList.add('active');
-  } else if(step === 6) {
-    const choices = Array.from(document.querySelectorAll('input[name="comm"]:checked'));
-    if(choices.length === 0) { alert("Please select at least one option."); return; }
-    const allOption = choices.find(c => parseFloat(c.value) === 140);
-    if(allOption) {
-      selections.comm = 140;
-    } else {
-      selections.comm = choices.reduce((sum, c) => sum + parseFloat(c.value), 0);
+  <div class="result" id="tuitionResult"></div>
+
+  <h2>Final Combined Output</h2>
+  <div class="result" id="finalResult"></div>
+
+  <script>
+    function calcLiving() {
+      let min = 0, max = 0;
+
+      function addChecked(selector) {
+        document.querySelectorAll(selector + ":checked").forEach(el => {
+          if (el.dataset.all === "true") {
+            // All of the above: sum all siblings (ignore this one)
+            let group = el.name;
+            let sumMin = 0, sumMax = 0;
+            document.querySelectorAll("input[name='" + group + "']").forEach(x => {
+              if (!x.dataset.all) {
+                sumMin += parseFloat(x.dataset.min);
+                sumMax += parseFloat(x.dataset.max);
+              }
+            });
+            min += sumMin; max += sumMax;
+          } else {
+            min += parseFloat(el.dataset.min);
+            max += parseFloat(el.dataset.max);
+          }
+        });
+      }
+
+      // Single-select sections
+      ["accom","medical","transport","meals","apparel"].forEach(name => {
+        let sel = document.querySelector("input[name='"+name+"']:checked");
+        if (sel) { min += parseFloat(sel.dataset.min); max += parseFloat(sel.dataset.max); }
+      });
+
+      // Multi-select
+      addChecked("input[name='comm']");
+      addChecked("input[name='recreation']");
+
+      document.getElementById("livingResult").innerHTML =
+        `<b>Estimated Monthly Cost of Living:</b><br>$${min.toLocaleString()} – $${max.toLocaleString()}`;
+      document.getElementById("finalResult").innerHTML =
+        `<b>Cost of Living:</b> $${min.toLocaleString()} – $${max.toLocaleString()}`;
     }
-    document.getElementById('step6').classList.remove('active');
-    document.getElementById('step7').classList.add('active');
-  } else if(step === 7) {
-    const choices = Array.from(document.querySelectorAll('input[name="recreation"]:checked'));
-    if(choices.length === 0) { alert("Please select at least one option."); return; }
-    const allOption = choices.find(c => parseFloat(c.value) === 409.5);
-    if(allOption) {
-      selections.recreation = 409.5;
-    } else {
-      selections.recreation = choices.reduce((sum, c) => sum + parseFloat(c.value), 0);
+
+    function calcTuition() {
+      let base = 56156.80; // 30 AUs minimum total
+      let status = document.querySelector("input[name='status']:checked");
+      let aid = document.querySelector("input[name='aid']:checked").value;
+      let alumni = document.getElementById("alumni").checked;
+
+      if (!status) {
+        alert("Please select a status."); return;
+      }
+
+      let tuition = base;
+
+      if (status.value === "scspr") {
+        tuition -= 5000; // base subsidy
+        if (aid === "yes") tuition -= 15000; // financial aid
+      }
+
+      if (alumni) tuition *= 0.9; // 10% rebate
+
+      document.getElementById("tuitionResult").innerHTML =
+        `<b>Estimated Tuition Fees:</b><br>$${tuition.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+
+      document.getElementById("finalResult").innerHTML +=
+        `<br><b>Tuition Fees:</b> $${tuition.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
     }
-    document.getElementById('step7').classList.remove('active');
-    document.getElementById('result').classList.add('active');
-    showResult();
-  }
-}
-
-function showResult() {
-  const total = 
-    (selections.accommodation || 0) +
-    (selections.medical || 0) +
-    (selections.transport || 0) +
-    (selections.food || 0) +
-    (selections.apparel || 0) +
-    (selections.comm || 0) +
-    (selections.recreation || 0);
-  document.getElementById('totalCost').innerText = "$" + total + " per month";
-}
-
-function restart() {
-  for(const step of [1,2,3,4,5,6,7]) {
-    document.getElementById('step'+step).classList.remove('active');
-  }
-  document.getElementById('result').classList.remove('active');
-  document.getElementById('step1').classList.add('active');
-  for(const key in selections) delete selections[key];
-  document.querySelectorAll('input').forEach(i => i.checked = false);
-}
-</script>
+  </script>
 </body>
 </html>
