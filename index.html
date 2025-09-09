@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cost of Living Calculator</title>
 <style>
-  body { font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; }
+  body { font-family: Arial, sans-serif; max-width: 700px; margin: auto; padding: 20px; }
   .step { display: none; margin-bottom: 20px; }
   .step.active { display: block; }
   button { padding: 10px 20px; margin-top: 10px; }
@@ -15,24 +15,86 @@
 <body>
   <h1>Cost of Living Calculator</h1>
 
+  <!-- Step 1: Accommodation -->
   <div id="step1" class="step active">
     <h2>Accommodation</h2>
     <p>Select your preferred type of rented accommodation:</p>
-    <div class="option"><input type="radio" name="accommodation" value="1000"> HDB Room ($1,000)</div>
-    <div class="option"><input type="radio" name="accommodation" value="1500"> HDB Flat ($1,500)</div>
-    <div class="option"><input type="radio" name="accommodation" value="2500"> Private Apartment ($2,500)</div>
+    <div class="option"><input type="radio" name="accommodation" value="1650"> A room in a condominium ($900–$2,650)</div>
+    <div class="option"><input type="radio" name="accommodation" value="1350"> A room in a government flat ($500–$2,200)</div>
+    <div class="option"><input type="radio" name="accommodation" value="3050"> A studio unit in a condominium ($1,599–$4,500)</div>
+    <div class="option"><input type="radio" name="accommodation" value="5300"> A condominium unit with two bedrooms ($3,300–$7,300)</div>
+    <div class="option"><input type="radio" name="accommodation" value="2950"> A government flat with two bedrooms ($2,700–$3,200)</div>
+    <div class="option"><input type="radio" name="accommodation" value="8000"> Landed property ($6,000–$10,000)</div>
     <button onclick="nextStep(1)">Next</button>
   </div>
 
+  <!-- Step 2: Medical -->
   <div id="step2" class="step">
-    <h2>Food</h2>
-    <p>Average monthly food expenses:</p>
-    <div class="option"><input type="radio" name="food" value="300"> $300</div>
-    <div class="option"><input type="radio" name="food" value="500"> $500</div>
-    <div class="option"><input type="radio" name="food" value="700"> $700</div>
+    <h2>Medical Treatment</h2>
+    <p>Select preferred location for medical treatment:</p>
+    <div class="option"><input type="radio" name="medical" value="158"> Public clinics (non-residents) ($79–$120 per visit; $158–$240 monthly)</div>
+    <div class="option"><input type="radio" name="medical" value="86"> Public clinics (permanent residents) ($36–$50 per visit; $72–$100 monthly)</div>
+    <div class="option"><input type="radio" name="medical" value="130"> Private clinics ($30–$55 per visit; $60–$200 monthly)</div>
     <button onclick="nextStep(2)">Next</button>
   </div>
 
+  <!-- Step 3: Transport -->
+  <div id="step3" class="step">
+    <h2>Transport</h2>
+    <p>Select your main mode of transport:</p>
+    <div class="option"><input type="radio" name="transport" value="93"> Public transport (buses & trains) ($66–$120)</div>
+    <div class="option"><input type="radio" name="transport" value="900"> Taxis ($900)</div>
+    <div class="option"><input type="radio" name="transport" value="3030"> Personal vehicle ($2,560–$3,500)</div>
+    <button onclick="nextStep(3)">Next</button>
+  </div>
+
+  <!-- Step 4: Food -->
+  <div id="step4" class="step">
+    <h2>Food</h2>
+    <p>Select your price range of daily meals:</p>
+    <div class="option"><input type="radio" name="food" value="180"> Budget (food centres & coffeeshops) ($3.5–$8 per meal/person)</div>
+    <div class="option"><input type="radio" name="food" value="1600"> Mid-priced (family restaurants, family of 4–5) ($28–$50 per meal/person)</div>
+    <div class="option"><input type="radio" name="food" value="304"> Luxury (fine dining) ($128–$480 per meal/person)</div>
+    <div class="option"><input type="radio" name="food" value="188"> Homecooked meals (per person for meat & vegetables) ($150–$225 monthly)</div>
+    <div class="option"><input type="radio" name="food" value="621"> Homecooked food delivery ($510–$732 monthly)</div>
+    <button onclick="nextStep(4)">Next</button>
+  </div>
+
+  <!-- Step 5: Apparel & Footwear -->
+  <div id="step5" class="step">
+    <h2>Apparel & Footwear</h2>
+    <p>Select your price range for apparel and footwear:</p>
+    <div class="option"><input type="radio" name="apparel" value="29.5"> Budget brands ($8.9–$48)</div>
+    <div class="option"><input type="radio" name="apparel" value="134.5"> Mid-range brands ($50–$219)</div>
+    <div class="option"><input type="radio" name="apparel" value="1310"> Luxury brands ($390–$2,230)</div>
+    <button onclick="nextStep(5)">Next</button>
+  </div>
+
+  <!-- Step 6: Communications & Home Entertainment -->
+  <div id="step6" class="step">
+    <h2>Communications & Home Entertainment</h2>
+    <p>Select all services that will be required:</p>
+    <div class="option"><input type="checkbox" name="comm" value="40"> Internet access ($30–$50)</div>
+    <div class="option"><input type="checkbox" name="comm" value="45"> Mobile phone plan ($10–$80)</div>
+    <div class="option"><input type="checkbox" name="comm" value="55"> Streaming subscriptions ($43–$67)</div>
+    <div class="option"><input type="checkbox" name="comm" value="140"> All of the above</div>
+    <button onclick="nextStep(6)">Next</button>
+  </div>
+
+  <!-- Step 7: Recreational Activities -->
+  <div id="step7" class="step">
+    <h2>Recreational Activities</h2>
+    <p>Select all recreational activities that might need to be catered for:</p>
+    <div class="option"><input type="checkbox" name="recreation" value="11"> Movies ($8.5–$13.5)</div>
+    <div class="option"><input type="checkbox" name="recreation" value="130"> Clubbing ($110–$150 per visit)</div>
+    <div class="option"><input type="checkbox" name="recreation" value="18.5"> Art & museum exhibitions ($10–$27)</div>
+    <div class="option"><input type="checkbox" name="recreation" value="190.5"> Plays, musicals & concerts ($78–$303)</div>
+    <div class="option"><input type="checkbox" name="recreation" value="59.5"> Theme parks & zoos ($34–$85)</div>
+    <div class="option"><input type="checkbox" name="recreation" value="409.5"> All of the above</div>
+    <button onclick="nextStep(7)">Next</button>
+  </div>
+
+  <!-- Result -->
   <div id="result" class="step">
     <h2>Estimated Monthly Cost</h2>
     <p id="totalCost"></p>
@@ -46,30 +108,79 @@ function nextStep(step) {
   if(step === 1) {
     const choice = document.querySelector('input[name="accommodation"]:checked');
     if(!choice) { alert("Please select an option."); return; }
-    selections.accommodation = parseInt(choice.value);
+    selections.accommodation = parseFloat(choice.value);
     document.getElementById('step1').classList.remove('active');
     document.getElementById('step2').classList.add('active');
   } else if(step === 2) {
+    const choice = document.querySelector('input[name="medical"]:checked');
+    if(!choice) { alert("Please select an option."); return; }
+    selections.medical = parseFloat(choice.value);
+    document.getElementById('step2').classList.remove('active');
+    document.getElementById('step3').classList.add('active');
+  } else if(step === 3) {
+    const choice = document.querySelector('input[name="transport"]:checked');
+    if(!choice) { alert("Please select an option."); return; }
+    selections.transport = parseFloat(choice.value);
+    document.getElementById('step3').classList.remove('active');
+    document.getElementById('step4').classList.add('active');
+  } else if(step === 4) {
     const choice = document.querySelector('input[name="food"]:checked');
     if(!choice) { alert("Please select an option."); return; }
-    selections.food = parseInt(choice.value);
-    document.getElementById('step2').classList.remove('active');
+    selections.food = parseFloat(choice.value);
+    document.getElementById('step4').classList.remove('active');
+    document.getElementById('step5').classList.add('active');
+  } else if(step === 5) {
+    const choice = document.querySelector('input[name="apparel"]:checked');
+    if(!choice) { alert("Please select an option."); return; }
+    selections.apparel = parseFloat(choice.value);
+    document.getElementById('step5').classList.remove('active');
+    document.getElementById('step6').classList.add('active');
+  } else if(step === 6) {
+    const choices = Array.from(document.querySelectorAll('input[name="comm"]:checked'));
+    if(choices.length === 0) { alert("Please select at least one option."); return; }
+    const allOption = choices.find(c => parseFloat(c.value) === 140);
+    if(allOption) {
+      selections.comm = 140;
+    } else {
+      selections.comm = choices.reduce((sum, c) => sum + parseFloat(c.value), 0);
+    }
+    document.getElementById('step6').classList.remove('active');
+    document.getElementById('step7').classList.add('active');
+  } else if(step === 7) {
+    const choices = Array.from(document.querySelectorAll('input[name="recreation"]:checked'));
+    if(choices.length === 0) { alert("Please select at least one option."); return; }
+    const allOption = choices.find(c => parseFloat(c.value) === 409.5);
+    if(allOption) {
+      selections.recreation = 409.5;
+    } else {
+      selections.recreation = choices.reduce((sum, c) => sum + parseFloat(c.value), 0);
+    }
+    document.getElementById('step7').classList.remove('active');
     document.getElementById('result').classList.add('active');
     showResult();
   }
 }
 
 function showResult() {
-  const total = (selections.accommodation || 0) + (selections.food || 0);
+  const total = 
+    (selections.accommodation || 0) +
+    (selections.medical || 0) +
+    (selections.transport || 0) +
+    (selections.food || 0) +
+    (selections.apparel || 0) +
+    (selections.comm || 0) +
+    (selections.recreation || 0);
   document.getElementById('totalCost').innerText = "$" + total + " per month";
 }
 
 function restart() {
-  selections.accommodation = 0;
-  selections.food = 0;
+  for(const step of [1,2,3,4,5,6,7]) {
+    document.getElementById('step'+step).classList.remove('active');
+  }
   document.getElementById('result').classList.remove('active');
   document.getElementById('step1').classList.add('active');
-  document.querySelectorAll('input[type=radio]').forEach(r => r.checked = false);
+  for(const key in selections) delete selections[key];
+  document.querySelectorAll('input').forEach(i => i.checked = false);
 }
 </script>
 </body>
