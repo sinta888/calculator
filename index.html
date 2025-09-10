@@ -58,12 +58,11 @@
   <label><input type="radio" name="programme" value="msc"> MSc (Coursework)</label>
   <label><input type="radio" name="programme" value="flexi"> Flexi Masters</label>
   <div class="button-container">
-    <button onclick="nextStep(0)">Next</button>
+    <button onclick="nextStep('step0')">Next</button>
   </div>
 </div>
 
-<!-- MSc Coursework Flow -->
-<!-- Step 1: Status -->
+<!-- MSc Flow -->
 <div class="step" id="mscStep1">
   <h3>Select your status:</h3>
   <label><input type="radio" name="mscStatus" value="intl"> International Student</label>
@@ -74,11 +73,10 @@
   </div>
 </div>
 
-<!-- Step 2: Financial Aid (only SC/PR) -->
 <div class="step" id="mscStep2">
   <h3>Are you eligible for financial aid? (SC/SPR only)</h3>
   <label><input type="radio" name="mscAid" value="no" checked> No</label>
-  <label><input type="radio" name="mscAid" value="yes"> Yes (up to $15,000) <br>
+  <label><input type="radio" name="mscAid" value="yes"> Yes (up to $15,000)<br>
     <small>More info: <a href="https://www.ntu.edu.sg/admissions/graduate/financialmatters/ntupgi#Content_C017_Col00" target="_blank">NTU Financial Aid</a></small>
   </label>
   <div class="button-container">
@@ -87,7 +85,6 @@
   </div>
 </div>
 
-<!-- Step 3: Alumni -->
 <div class="step" id="mscStep3">
   <h3>Are you an NTU Alumni?</h3>
   <label><input type="radio" name="mscAlumni" value="no" checked> No</label>
@@ -98,8 +95,7 @@
   </div>
 </div>
 
-<!-- Flexi Masters Flow -->
-<!-- Step 1: Status -->
+<!-- Flexi Flow -->
 <div class="step" id="flexiStep1">
   <h3>Select your status:</h3>
   <label><input type="radio" name="flexiStatus" value="intl"> International Student</label>
@@ -110,7 +106,6 @@
   </div>
 </div>
 
-<!-- Step 2: Self-funded or Company-sponsored -->
 <div class="step" id="flexiStep2">
   <h3>I am:</h3>
   <label><input type="radio" name="flexiPay" value="self"> Self-funded</label>
@@ -121,21 +116,19 @@
   </div>
 </div>
 
-<!-- Step 3: Flexi Masters Funding (SC/PR only, self-funded) -->
 <div class="step" id="flexiStep3">
   <h3>Select your funding scheme:</h3>
-  <label><input type="radio" name="flexiFunding" value="ssg70"> SSG up to 70% (Programme Fee Payable: S$8,423.52)</label>
-  <label><input type="radio" name="flexiFunding" value="etss"> ETSS (Programme Fee Payable: S$3,271.52) <br>
+  <label><input type="radio" name="flexiFunding" value="ssg70"> SSG up to 70% (Payable: S$8,423.52)</label>
+  <label><input type="radio" name="flexiFunding" value="etss"> ETSS (Payable: S$3,271.52)<br>
     <small>Check eligibility: <a href="https://www.skillsfuture.gov.sg/initiatives/employers/enhanced-training-support-for-smes" target="_blank">ETSS SME</a></small>
   </label>
-  <label><input type="radio" name="flexiFunding" value="mces"> MCES ≥40yo (Programme Fee Payable: S$3,271.52)</label>
+  <label><input type="radio" name="flexiFunding" value="mces"> MCES ≥40yo (Payable: S$3,271.52)</label>
   <div class="button-container">
     <button onclick="prevStep('flexiStep3')">Back</button>
     <button onclick="nextStep('flexiStep3')">Next</button>
   </div>
 </div>
 
-<!-- Step 4: Alumni (self-funded only) -->
 <div class="step" id="flexiStep4">
   <h3>Are you an NTU Alumni?</h3>
   <label><input type="radio" name="flexiAlumni" value="no" checked> No</label>
@@ -146,7 +139,6 @@
   </div>
 </div>
 
-<!-- Step 5: SkillsFuture Credits (if SC/PR) -->
 <div class="step" id="flexiStep5">
   <h3>Do you want to use SkillsFuture Credits?</h3>
   <label><input type="radio" name="flexiSF" value="no" checked> No</label>
@@ -157,7 +149,6 @@
   </div>
 </div>
 
-<!-- Step 6: Result -->
 <div class="step" id="stepResult">
   <h3>Your Estimated Tuition Fee</h3>
   <div class="result" id="tuitionResult"></div>
@@ -168,101 +159,120 @@
 </div>
 
 <script>
-let tuitionMScBase = 56156.80; // MSc 30 AUs
-let tuitionFlexiBase = 28078.40; // Flexi Masters
+let tuitionMScBase = 56156.80;
+let tuitionFlexiBase = 28078.40;
 
 function nextStep(stepId) {
-  // Error handling: must select an option
   let step = document.getElementById(stepId);
   let checked = step.querySelector("input[type='radio']:checked");
   if (!checked) { alert("Please make a selection to proceed."); return; }
-
   step.classList.remove("active");
 
-  // Determine next step
-  if (stepId === "step0") {
-    if (checked.value === "msc") document.getElementById("mscStep1").classList.add("active");
-    else document.getElementById("flexiStep1").classList.add("active");
-  } 
-  else if (stepId === "mscStep1") {
-    if (checked.value === "intl") document.getElementById("mscStep3").classList.add("active"); // skip aid
-    else document.getElementById("mscStep2").classList.add("active");
-  } 
-  else if (stepId === "mscStep2") document.getElementById("mscStep3").classList.add("active");
-  else if (stepId === "mscStep3") document.getElementById("stepResult").classList.add("active");
-  else if (stepId === "flexiStep1") document.getElementById("flexiStep2").classList.add("active");
-  else if (stepId === "flexiStep2") {
-    if (checked.value === "self") document.getElementById("flexiStep3").classList.add("active");
-    else document.getElementById("stepResult").classList.add("active"); // company sponsored: skip funding
+  switch(stepId) {
+    case "step0":
+      if (checked.value==="msc") document.getElementById("mscStep1").classList.add("active");
+      else document.getElementById("flexiStep1").classList.add("active");
+      break;
+    case "mscStep1":
+      if (checked.value==="intl") document.getElementById("mscStep3").classList.add("active");
+      else document.getElementById("mscStep2").classList.add("active");
+      break;
+    case "mscStep2":
+      document.getElementById("mscStep3").classList.add("active");
+      break;
+    case "mscStep3":
+      document.getElementById("stepResult").classList.add("active");
+      calcTuition();
+      break;
+    case "flexiStep1":
+      document.getElementById("flexiStep2").classList.add("active");
+      break;
+    case "flexiStep2":
+      if (checked.value==="self") {
+        let status = document.querySelector("input[name='flexiStatus']:checked").value;
+        if(status==="scspr") document.getElementById("flexiStep3").classList.add("active");
+        else document.getElementById("flexiStep4").classList.add("active"); // intl skip funding
+      } else document.getElementById("stepResult").classList.add("active"); // company-sponsored
+      break;
+    case "flexiStep3":
+      document.getElementById("flexiStep4").classList.add("active");
+      break;
+    case "flexiStep4":
+      document.getElementById("flexiStep5").classList.add("active");
+      break;
+    case "flexiStep5":
+      document.getElementById("stepResult").classList.add("active");
+      calcTuition();
+      break;
   }
-  else if (stepId === "flexiStep3") document.getElementById("flexiStep4").classList.add("active");
-  else if (stepId === "flexiStep4") document.getElementById("flexiStep5").classList.add("active");
-  else if (stepId === "flexiStep5") document.getElementById("stepResult").classList.add("active");
-
-  if (stepId === "mscStep3" || stepId === "flexiStep5" || (stepId === "flexiStep2" && checked.value==="company")) calcTuition();
 }
 
 function prevStep(stepId) {
-  document.getElementById(stepId).classList.remove("active");
+  let step = document.getElementById(stepId);
+  step.classList.remove("active");
 
-  if (stepId === "mscStep1") document.getElementById("step0").classList.add("active");
-  else if (stepId === "mscStep2") document.getElementById("mscStep1").classList.add("active");
-  else if (stepId === "mscStep3") {
-    let status = document.querySelector("input[name='mscStatus']:checked").value;
-    if (status==="intl") document.getElementById("mscStep1").classList.add("active");
-    else document.getElementById("mscStep2").classList.add("active");
+  switch(stepId) {
+    case "mscStep1": document.getElementById("step0").classList.add("active"); break;
+    case "mscStep2": document.getElementById("mscStep1").classList.add("active"); break;
+    case "mscStep3":
+      let status = document.querySelector("input[name='mscStatus']:checked").value;
+      if(status==="intl") document.getElementById("mscStep1").classList.add("active");
+      else document.getElementById("mscStep2").classList.add("active");
+      break;
+    case "flexiStep1": document.getElementById("step0").classList.add("active"); break;
+    case "flexiStep2": document.getElementById("flexiStep1").classList.add("active"); break;
+    case "flexiStep3": document.getElementById("flexiStep2").classList.add("active"); break;
+    case "flexiStep4": 
+      let pay = document.querySelector("input[name='flexiPay']:checked").value;
+      if(pay==="self") document.getElementById("flexiStep3").classList.add("active");
+      else document.getElementById("flexiStep2").classList.add("active");
+      break;
+    case "flexiStep5": document.getElementById("flexiStep4").classList.add("active"); break;
   }
-  else if (stepId === "flexiStep1") document.getElementById("step0").classList.add("active");
-  else if (stepId === "flexiStep2") document.getElementById("flexiStep1").classList.add("active");
-  else if (stepId === "flexiStep3") document.getElementById("flexiStep2").classList.add("active");
-  else if (stepId === "flexiStep4") document.getElementById("flexiStep3").classList.add("active");
-  else if (stepId === "flexiStep5") document.getElementById("flexiStep4").classList.add("active");
 }
 
 function restart() {
   document.querySelectorAll(".step").forEach(s=>s.classList.remove("active"));
   document.getElementById("step0").classList.add("active");
-  document.getElementById("tuitionResult").innerHTML = "";
+  document.getElementById("tuitionResult").innerHTML="";
 }
 
-// Tuition calculation
 function calcTuition() {
   let tuition = 0;
   let programme = document.querySelector("input[name='programme']:checked").value;
 
-  if (programme==="msc") {
-    let status = document.querySelector("input[name='mscStatus']:checked").value;
+  if(programme==="msc") {
     tuition = tuitionMScBase;
-    if (status==="scspr") {
-      tuition -= 5000; // base subsidy
+    let status = document.querySelector("input[name='mscStatus']:checked").value;
+    if(status==="scspr") {
+      tuition -= 5000;
       let aid = document.querySelector("input[name='mscAid']:checked").value;
-      if (aid==="yes") tuition -= 15000;
+      if(aid==="yes") tuition -= 15000;
     }
     let alumni = document.querySelector("input[name='mscAlumni']:checked").value;
-    if (alumni==="yes") tuition *= 0.9;
-  } 
-  else if (programme==="flexi") {
-    let status = document.querySelector("input[name='flexiStatus']:checked").value;
+    if(alumni==="yes") tuition *= 0.9;
+  } else if(programme==="flexi") {
     tuition = tuitionFlexiBase;
+    let status = document.querySelector("input[name='flexiStatus']:checked").value;
     let pay = document.querySelector("input[name='flexiPay']:checked").value;
-    if (pay==="self" && status==="scspr") {
+    if(pay==="self" && status==="scspr") {
       let funding = document.querySelector("input[name='flexiFunding']:checked");
-      if (funding) {
-        if (funding.value==="ssg70") tuition = 8423.52;
-        else if (funding.value==="etss") tuition = 3271.52;
-        else if (funding.value==="mces") tuition = 3271.52;
+      if(funding) {
+        if(funding.value==="ssg70") tuition = 8423.52;
+        else if(funding.value==="etss") tuition = 3271.52;
+        else if(funding.value==="mces") tuition = 3271.52;
       }
       let alumni = document.querySelector("input[name='flexiAlumni']:checked").value;
-      if (alumni==="yes") tuition -= 1600; // course credits
+      if(alumni==="yes") tuition -= 1600;
       let useSF = document.querySelector("input[name='flexiSF']:checked").value;
-      if (useSF==="yes") {
-        let sfAmount = parseFloat(document.getElementById("sfAmount").value) || 0;
+      if(useSF==="yes") {
+        let sfAmount = parseFloat(document.getElementById("sfAmount").value)||0;
         tuition -= sfAmount;
       }
     }
   }
 
-  if (tuition<0) tuition=0;
+  if(tuition<0) tuition=0;
   document.getElementById("tuitionResult").innerHTML =
     `Base Tuition: S$${tuition.toFixed(2)}<br>Estimated Tuition Payable: S$${tuition.toFixed(2)}`;
 }
