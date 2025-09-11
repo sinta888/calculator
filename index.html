@@ -252,33 +252,43 @@ function calculateMSC() {
   // Get user selections
   let status = document.querySelector('input[name="mscStatus"]:checked').value;
   // For intl, no financial aid question - assume no aid
-  let aid = (status === 'scspr') ? document.querySelector('input[name="mscAid"]:checked').value : 'no';
+  let financialAid = (status === 'scspr') ? document.querySelector('input[name="mscAid"]:checked').value : 'no';
   let alumni = document.querySelector('input[name="mscAlumni"]:checked').value;
 
-  // Base tuition fees fixed here (can be adjusted to actual fees)
-  let baseFee = (status === 'intl') ? 30000 : 15000;
-  // Financial aid amount set; official top-up 15,000, apply if aid==='yes'
-  let aidAmount = (aid === 'yes') ? 15000 : 0;
-  // Alumni rebate is 10% of base fee if applicable
-  let alumniDiscount = (alumni === 'yes') ? 0.10 * baseFee : 0;
-
-  // Calculate final payable, ensuring non-negative
-  let total = baseFee - aidAmount - alumniDiscount;
-  if(total < 0) total = 0;
-
+  //Calculates the final payable MSc tuition fee 
+  const baseFee = 56156.80; // official total tuition fee
+  let subsidy = 0;
+  // For SC/PR students, apply subsidy
+  if(status === 'scspr') {
+    if(financialAid === 'yes') {
+      subsidy = 15000; // financial aid includes base 5000
+    } else {
+      subsidy = 5000; // base subsidy only
+    }
+  }
+  let feeAfterSubsidy = baseFee - subsidy;
+  if(feeAfterSubsidy < 0) feeAfterSubsidy = 0;
+  // Alumni rebate 10% of fee after subsidy
+  let alumniDiscount = 0;
+  if(alumni === 'yes') {
+    alumniDiscount = 0.10 * feeAfterSubsidy;
+  }
+  const totalPayable = feeAfterSubsidy - alumniDiscount;
+  if(totalPayable < 0) totalPayable = 0;
   // Build HTML with subsidy breakdown table
   showResult(`
     <h3>Estimated MSc Tuition Fee</h3>
     <table>
       <tr><th>Item</th><th>Amount (S$)</th></tr>
       <tr><td>Base Tuition Fee</td><td>${baseFee.toLocaleString(undefined, {minimumFractionDigits:2})}</td></tr>
-      <tr><td>Financial Aid</td><td>-${aidAmount.toLocaleString(undefined, {minimumFractionDigits:2})}</td></tr>
+      <tr><td>Financial Aid</td><td>-${subsidy.toLocaleString(undefined, {minimumFractionDigits:2})}</td></tr>
       <tr><td>Alumni Discount</td><td>-${alumniDiscount.toLocaleString(undefined, {minimumFractionDigits:2})}</td></tr>
-      <tr><th>Total Estimated Fee</th><th>${total.toLocaleString(undefined, {minimumFractionDigits:2})}</th></tr>
+      <tr><th>Total Estimated Fee</th><th>${totalPayable.toLocaleString(undefined, {minimumFractionDigits:2})}</th></tr>
     </table>
     <div class="button-container"><button class="restart" onclick="restart()">Start Over</button></div>
   `);
 }
+
 
 // Show final result for Flexi Masters
 function calculateFlexi() {
