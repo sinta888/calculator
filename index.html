@@ -337,9 +337,15 @@ function calculateFlexi() {
     // fallback fee if no funding selected
     fee = 28078.40;
   }
-
-  // Alumni discount fixed amount
-  let alumniDiscount = (alumni === 'yes') ? 1600 : 0;
+  
+  // Calculate alumni discount capped at 50% of course fee pre-GST
+  let maxAlumniDiscount = 1600;
+  let halfCourseFee = (/* course fee before GST, e.g.  */ 5152 / 1.09) * 0.5; // example using $5152 course fee from table and removing 9% GST
+  let alumniDiscount = 0;
+  if(alumni === 'yes') {
+    alumniDiscount = Math.min(maxAlumniDiscount, halfCourseFee);
+  }
+  
   // SkillsFuture deduction
   let sfDeduction = (sf === 'yes') ? sfAmount : 0;
 
