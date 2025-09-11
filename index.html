@@ -202,11 +202,16 @@ function nextStep(step) {
     currentStep = 'flexiStep2';
   }
   else if(step === 'flexiStep2') {
-    // Determine next step for flexi students based on status and pay option
     const status = document.querySelector('input[name="flexiStatus"]:checked').value;
     const pay = document.querySelector('input[name="flexiPay"]:checked').value;
-    // International self-funded goes to Alumni step directly (flexiStep4)
-    currentStep = (status === 'intl' && pay === 'self') ? 'flexiStep4' : 'flexiStep3';
+    // If international and company-sponsored, skip funding scheme step, go to Alumni directly
+    if(status === 'intl' && pay === 'company') {
+      currentStep = 'flexiStep4';
+    } else if(status === 'intl' && pay === 'self') {
+      currentStep = 'flexiStep4';
+    } else {
+      currentStep = 'flexiStep3';  // Local or other valid cases go to funding scheme
+    }
   }
   else if(step === 'flexiStep3') {
     currentStep = 'flexiStep4';
@@ -295,10 +300,11 @@ function calculateMSC() {
 function calculateFlexi() {
   let status = document.querySelector('input[name="flexiStatus"]:checked').value;
   let pay = document.querySelector('input[name="flexiPay"]:checked').value;
-  let funding = (status === 'intl' && pay === 'self') ? '' : document.querySelector('input[name="flexiFunding"]:checked').value;
-  let alumni = document.querySelector('input[name="flexiAlumni"]:checked').value;
-  let sf = (status === 'intl' && pay === 'self') ? 'no' : document.querySelector('input[name="flexiSF"]:checked').value;
+  let funding = (status === 'intl' && pay === 'self') ? '' : document.querySelector('input[name="flexiFunding"]:checked')?.value || '';
+  let alumni = document.querySelector('input[name="flexiAlumni"]:checked')?.value || 'no';
+  let sf = (status === 'intl' && pay === 'self') ? 'no' : document.querySelector('input[name="flexiSF"]:checked')?.value || 'no';
   let sfAmount = parseFloat(document.getElementById('sfAmount').value) || 0;
+  
   let fee = 0;
   let fundingName = 'None';
 
@@ -312,14 +318,22 @@ function calculateFlexi() {
     fee = 3271.52;
     fundingName = 'MCES';
   } else if (status === 'intl' && pay === 'self'){
-    fee = 28078.40;  // assuming full fee
+    fee = 28078.40; 
     fundingName = 'Self-funded International - No funding scheme';
+  } else {
+    // fallback fee if no funding selected
+    fee = 28078.40;
   }
 
+  // Alumni discount fixed amount
   let alumniDiscount = (alumni === 'yes') ? 1600 : 0;
+  // SkillsFuture deduction
   let sfDeduction = (sf === 'yes') ? sfAmount : 0;
+
   let total = fee - alumniDiscount - sfDeduction;
   if(total < 0) total = 0;
+
+  // Show breakdown with debugs, if needed log variables here
 
   showResult(`
     <h3>Estimated Flexi Masters Tuition Fee</h3>
