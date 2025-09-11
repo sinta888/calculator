@@ -6,13 +6,24 @@
 <style>
   body {
     font-family: Arial, sans-serif;
-    background-color: #ffffff;
-    color: #181C62;
+    background: #f5f5f5;
     margin: 0;
-    padding: 20px;
+    padding: 40px;
+    display: flex;
+    justify-content: center;
   }
-  h2 {
-    color: #D71440;
+  .container {
+    max-width: 600px;
+    width: 100%;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  h1 {
+    color: #181C62;
+    text-align: center;
+    margin-bottom: 30px;
   }
   .calculator-step {
     display: none;
@@ -34,6 +45,7 @@
   }
   .calculator-buttons {
     margin-top: 15px;
+    text-align: center;
   }
   .edb-pri-btn {
     background-color: #D71440;
@@ -43,11 +55,11 @@
     border-radius: 6px;
     cursor: pointer;
     font-size: 14px;
+    margin: 5px;
   }
-  .edb-pri-btn:disabled {
-    background-color: #c8c8c8;
-    cursor: not-allowed;
-  }
+  .edb-pri-btn.back { background-color: #181C62; }
+  .edb-pri-btn.restart { background-color: #8c8c8c; }
+  .edb-pri-btn:disabled { background-color: #c8c8c8; cursor: not-allowed; }
   table {
     width: 100%;
     border-collapse: collapse;
@@ -75,7 +87,8 @@
 </head>
 <body>
 
-<h2>NTU Tuition Fee Calculator</h2>
+<div class="container">
+<h1>NTU EEE MSc Tuition Fee Calculator</h1>
 
 <!-- Step 1: Programme Type -->
 <div class="calculator-step active" id="step-programme">
@@ -104,7 +117,7 @@
     <input type="radio" name="studentType" value="Intl"> International
   </label>
   <div class="calculator-buttons">
-    <button class="edb-pri-btn" onclick="prevStep('step-student-type')">Back</button>
+    <button class="edb-pri-btn back" onclick="prevStep('step-student-type')">Back</button>
     <button class="edb-pri-btn" onclick="nextStep('step-student-type')">Next</button>
   </div>
 </div>
@@ -119,7 +132,7 @@
     <input type="radio" name="funding" value="company"> Company-sponsored
   </label>
   <div class="calculator-buttons">
-    <button class="edb-pri-btn" onclick="prevStep('step-funding')">Back</button>
+    <button class="edb-pri-btn back" onclick="prevStep('step-funding')">Back</button>
     <button class="edb-pri-btn" onclick="nextStep('step-funding')">Next</button>
   </div>
 </div>
@@ -134,7 +147,7 @@
     <input type="radio" name="sfEtss" value="no"> No
   </label>
   <div class="calculator-buttons">
-    <button class="edb-pri-btn" onclick="prevStep('step-sf-etss')">Back</button>
+    <button class="edb-pri-btn back" onclick="prevStep('step-sf-etss')">Back</button>
     <button class="edb-pri-btn" onclick="nextStep('step-sf-etss')">Next</button>
   </div>
 </div>
@@ -152,7 +165,7 @@
     <input type="radio" name="financialAid" value="no"> No
   </label>
   <div class="calculator-buttons">
-    <button class="edb-pri-btn" onclick="prevStep('step-financial-aid')">Back</button>
+    <button class="edb-pri-btn back" onclick="prevStep('step-financial-aid')">Back</button>
     <button class="edb-pri-btn" onclick="nextStep('step-financial-aid')">Next</button>
   </div>
 </div>
@@ -162,7 +175,7 @@
   <h3>Estimated Tuition Fee</h3>
   <div id="result-content"></div>
   <div class="calculator-buttons">
-    <button class="edb-pri-btn" onclick="startOver()">Start Over</button>
+    <button class="edb-pri-btn restart" onclick="startOver()">Start Over</button>
   </div>
 </div>
 
@@ -179,7 +192,6 @@ function showStep(index) {
 }
 
 function nextStep(stepId) {
-  // Simple logic to skip steps for MSc/Flexi rules
   const programme = document.querySelector('input[name="programme"]:checked')?.value;
   const studentType = document.querySelector('input[name="studentType"]:checked')?.value;
   const funding = document.querySelector('input[name="funding"]:checked')?.value;
@@ -189,29 +201,17 @@ function nextStep(stepId) {
     showStep(1);
   } else if(stepId === 'step-student-type') {
     if(!studentType) { alert('Please select a student type'); return; }
-    if(programme === 'msc') {
-      showStep(5); // skip funding for MSc
-    } else if(programme === 'flexi') {
-      if(studentType === 'Intl') {
-        showStep(6); // skip funding and SF for international
-      } else {
-        showStep(2); // show funding step
-      }
+    if(programme === 'msc') showStep(5);
+    else if(programme === 'flexi') {
+      if(studentType === 'Intl') showStep(6);
+      else showStep(2);
     }
   } else if(stepId === 'step-funding') {
     if(!funding) { alert('Please select funding type'); return; }
-    // Flexi logic
-    const scPR = (studentType === 'SC' || studentType === 'PR');
-    if(scPR) {
-      showStep(3); // SkillsFuture / ETSS step
-    } else {
-      showStep(6); // International
-    }
-  } else if(stepId === 'step-sf-etss') {
-    showStep(6);
-  } else if(stepId === 'step-financial-aid') {
-    showStep(6);
-  }
+    showStep(3);
+  } else if(stepId === 'step-sf-etss') showStep(6);
+  else if(stepId === 'step-financial-aid') showStep(6);
+
   calculateResult();
 }
 
@@ -243,7 +243,7 @@ function calculateResult() {
     let subsidy = 0;
     if(studentType === 'SC' || studentType === 'PR') {
       subsidy += 5000;
-      if(financialAid === 'yes') subsidy += 10000; // AY25 onwards: max 15k
+      if(financialAid === 'yes') subsidy += 10000;
     }
     html += `<table>
       <tr><th>Item</th><th>Amount (S$)</th></tr>
@@ -254,21 +254,7 @@ function calculateResult() {
   } else if(programme === 'flexi') {
     let total = 28078.40;
     let subsidy = 0;
-    let notes = '';
-
-    if(studentType === 'SC' || studentType === 'PR') {
-      if(funding === 'self') {
-        if(studentType === 'SC') subsidy = 0.7 * total; // 70%
-        else if(studentType === 'PR') subsidy = 0.7 * total;
-      } else if(funding === 'company') {
-        if(studentType === 'SC') subsidy = 0.7 * total; 
-        else if(studentType === 'PR') subsidy = 0.7 * total;
-      }
-    } else {
-      // International, no subsidy
-      subsidy = 0;
-    }
-
+    if(studentType === 'SC' || studentType === 'PR') subsidy = 0.7 * total;
     html += `<table>
       <tr><th>Item</th><th>Amount (S$)</th></tr>
       <tr><td>Programme Fee (incl. GST)</td><td>${total.toFixed(2)}</td></tr>
@@ -281,5 +267,6 @@ function calculateResult() {
 }
 </script>
 
+</div>
 </body>
 </html>
