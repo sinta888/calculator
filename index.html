@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>EEE MSc Tuition Fee Calculator</title>
+<title>NTU EEE MSc Tuition Fee Calculator</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -72,12 +72,12 @@
 </head>
 <body>
 <div class="container">
-<h1>NTU Tuition Fee Calculator</h1>
+<h1>NTU EEE MSc Tuition Fee Calculator</h1>
 <!-- Step 0: Programme Selection -->
 <div class="step active" id="step0">
   <h3>Select your programme:</h3>
   <label><input type="radio" name="programme" value="msc"> MSc (Coursework)</label>
-  <label><input type="radio" name="programme" value="flexi"> Flexi Masters</label>
+  <label><input type="radio" name="programme" value="flexi"> FlexiMasters</label>
   <div class="button-container">
     <button class="next" onclick="nextStep('step0')">Next</button>
   </div>
@@ -136,11 +136,14 @@
 </div>
 <div class="step" id="flexiStep3">
   <h3>Select your funding scheme:</h3>
-  <label id="ssgLabel"><input type="radio" name="flexiFunding" value="ssg70"> SSG up to 70% (Payable: S$8,423.52)</label>
-  <label id="etssLabel"><input type="radio" name="flexiFunding" value="etss"> ETSS (Payable: S$3,271.52)
-    <small>Check eligibility: <a href="https://www.skillsfuture.gov.sg/initiatives/employers/enhanced-training-support-for-smes" target="_blank">ETSS SME</a></small>
+  <label id="ssgLabel"><input type="radio" name="flexiFunding" value="ssg70">Singapore Citizens aged below 40 years and Singapore Permanent Residents.</label>
+  <label id="etssLabel">
+    <input type="radio" name="flexiFunding" value="etss"> ETSS (Payable: S$3,271.52)
+    <span class="info-link">
+      <a href="https://www.skillsfuture.gov.sg/initiatives/employers/enhanced-training-support-for-smes" target="_blank" rel="noopener noreferrer">Check ETSS eligibility for SMEs</a>
+    </span>
   </label>
-  <label id="mcesLabel"><input type="radio" name="flexiFunding" value="mces"> MCES ≥40yo (Payable: S$3,271.52)</label>
+  <label id="mcesLabel"><input type="radio" name="flexiFunding" value="mces">Singapore Citizens aged 40 years and above.</label>
   <div class="button-container">
     <button class="back" onclick="prevStep('flexiStep3')">Back</button>
     <button class="next" onclick="nextStep('flexiStep3')">Next</button>
@@ -149,7 +152,10 @@
 <div class="step" id="flexiStep4">
   <h3>Are you an NTU Alumni?</h3>
   <label><input type="radio" name="flexiAlumni" value="no" checked> No</label>
-  <label><input type="radio" name="flexiAlumni" value="yes"> Yes (Course credits S$1,600 applicable)</label>
+  <label>
+      <input type="radio" name="flexiAlumni" value="yes"> Yes (Course credits S$1,600 applicable)
+      <span class="info-link"><a href="https://www.ntu.edu.sg/pace/group/alumni" target="_blank">More info: NTU Alumni Course Credits</a></span>
+  </label>
   <div class="button-container">
     <button class="back" onclick="prevStep('flexiStep4')">Back</button>
     <button class="next" onclick="nextStep('flexiStep4')">Next</button>
