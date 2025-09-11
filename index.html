@@ -68,10 +68,8 @@
 </style>
 </head>
 <body>
-
 <div class="container">
 <h1>NTU Tuition Fee Calculator</h1>
-
 <!-- Step 0: Programme Selection -->
 <div class="step active" id="step0">
   <h3>Select your programme:</h3>
@@ -81,7 +79,6 @@
     <button class="next" onclick="nextStep('step0')">Next</button>
   </div>
 </div>
-
 <!-- MSc Steps -->
 <div class="step" id="mscStep1">
   <h3>Select your status:</h3>
@@ -92,7 +89,6 @@
     <button class="next" onclick="nextStep('mscStep1')">Next</button>
   </div>
 </div>
-
 <div class="step" id="mscStep2">
   <h3>Are you eligible for financial aid? (SC/SPR only)</h3>
   <label>
@@ -107,7 +103,6 @@
     <button class="next" onclick="nextStep('mscStep2')">Next</button>
   </div>
 </div>
-
 <div class="step" id="mscStep3">
   <h3>Are you an NTU Alumni?</h3>
   <label><input type="radio" name="mscAlumni" value="no" checked> No</label>
@@ -117,7 +112,6 @@
     <button class="next" onclick="calculateMSC()">Calculate</button>
   </div>
 </div>
-
 <!-- Flexi Steps -->
 <div class="step" id="flexiStep1">
   <h3>Select your status:</h3>
@@ -128,7 +122,6 @@
     <button class="next" onclick="nextStep('flexiStep1')">Next</button>
   </div>
 </div>
-
 <div class="step" id="flexiStep2">
   <h3>I am:</h3>
   <label><input type="radio" name="flexiPay" value="self"> Self-funded</label>
@@ -138,7 +131,6 @@
     <button class="next" onclick="nextStep('flexiStep2')">Next</button>
   </div>
 </div>
-
 <div class="step" id="flexiStep3">
   <h3>Select your funding scheme:</h3>
   <label id="ssgLabel"><input type="radio" name="flexiFunding" value="ssg70"> SSG up to 70% (Payable: S$8,423.52)</label>
@@ -151,7 +143,6 @@
     <button class="next" onclick="nextStep('flexiStep3')">Next</button>
   </div>
 </div>
-
 <div class="step" id="flexiStep4">
   <h3>Are you an NTU Alumni?</h3>
   <label><input type="radio" name="flexiAlumni" value="no" checked> No</label>
@@ -161,7 +152,6 @@
     <button class="next" onclick="nextStep('flexiStep4')">Next</button>
   </div>
 </div>
-
 <div class="step" id="flexiStep5">
   <h3>Do you want to use SkillsFuture Credits?</h3>
   <label><input type="radio" name="flexiSF" value="no" checked> No</label>
@@ -171,129 +161,193 @@
     <button class="next" onclick="calculateFlexi()">Calculate</button>
   </div>
 </div>
-
 <div class="result" id="result" style="display:none;"></div>
-
 <script>
+// Keep track of current active step
 let currentStep = 'step0';
 
+// Function to proceed to the next step based on current step and inputs
 function nextStep(step) {
+  // Validate user selected an option for current step
   const radios = document.querySelectorAll(`#${step} input[type="radio"]`);
   let selected = false;
   radios.forEach(r => { if(r.checked) selected = true; });
   if(!selected) { alert("Please select an option to proceed."); return; }
 
+  // Hide current step
   document.getElementById(step).classList.remove('active');
 
-  // MSc logic
-  if(step==='step0') {
+  // Logic to determine next step based on current and inputs
+  // MSc path
+  if(step === 'step0') { 
+    // Determine programme chosen
     const programme = document.querySelector('input[name="programme"]:checked').value;
-    if(programme==='msc') { currentStep='mscStep1'; } else { currentStep='flexiStep1'; }
-  } 
-  else if(step==='mscStep1') {
+    if(programme === 'msc') { currentStep = 'mscStep1'; }
+    else { currentStep = 'flexiStep1'; }
+  }
+  else if(step === 'mscStep1') {
+    // MSc status determines next step: intl alumni step, scspr financial aid step
     const status = document.querySelector('input[name="mscStatus"]:checked').value;
-    currentStep = (status==='intl') ? 'mscStep3' : 'mscStep2';
-  } 
-  else if(step==='mscStep2') currentStep='mscStep3';
-  else if(step==='mscStep3') { calculateMSC(); return; }
-  // Flexi logic
-  else if(step==='flexiStep1') currentStep='flexiStep2';
-  else if(step==='flexiStep2') {
+    // International MSc directly goes to Alumni question skipping financial aid
+    currentStep = (status === 'intl') ? 'mscStep3' : 'mscStep2';
+  }
+  else if(step === 'mscStep2') {
+    // Financial aid step always leads to alumni step
+    currentStep = 'mscStep3';
+  }
+  else if(step === 'mscStep3') {
+    // Calculate and show result for MSc
+    calculateMSC();
+    return; // end flow here
+  }
+  // Flexi path
+  else if(step === 'flexiStep1') {
+    currentStep = 'flexiStep2';
+  }
+  else if(step === 'flexiStep2') {
+    // Determine next step for flexi students based on status and pay option
     const status = document.querySelector('input[name="flexiStatus"]:checked').value;
     const pay = document.querySelector('input[name="flexiPay"]:checked').value;
-    currentStep = (status==='intl' && pay==='self') ? 'flexiStep4' : 'flexiStep3';
-  } 
-  else if(step==='flexiStep3') currentStep='flexiStep4';
-  else if(step==='flexiStep4') currentStep='flexiStep5';
-  else if(step==='flexiStep5') { calculateFlexi(); return; }
+    // International self-funded goes to Alumni step directly (flexiStep4)
+    currentStep = (status === 'intl' && pay === 'self') ? 'flexiStep4' : 'flexiStep3';
+  }
+  else if(step === 'flexiStep3') {
+    currentStep = 'flexiStep4';
+  }
+  else if(step === 'flexiStep4') {
+    currentStep = 'flexiStep5';
+  }
+  else if(step === 'flexiStep5') {
+    // Calculate and show result for Flexi Masters
+    calculateFlexi();
+    return; // end flow here
+  }
 
+  // Show next step determined above
   document.getElementById(currentStep).classList.add('active');
 }
 
+// Function to go back to previous step based on current step
 function prevStep(step) {
   document.getElementById(step).classList.remove('active');
   switch(step) {
-    case 'mscStep1': currentStep='step0'; break;
-    case 'mscStep2': currentStep='mscStep1'; break;
-    case 'mscStep3': currentStep='mscStep1'; break;
-    case 'flexiStep1': currentStep='step0'; break;
-    case 'flexiStep2': currentStep='flexiStep1'; break;
-    case 'flexiStep3': currentStep='flexiStep2'; break;
-    case 'flexiStep4': 
+    case 'mscStep1': currentStep = 'step0'; break;
+    case 'mscStep2': currentStep = 'mscStep1'; break;
+    case 'mscStep3': currentStep = 'mscStep1'; break;  
+    case 'flexiStep1': currentStep = 'step0'; break;
+    case 'flexiStep2': currentStep = 'flexiStep1'; break;
+    case 'flexiStep3': currentStep = 'flexiStep2'; break;
+    case 'flexiStep4':
       const status = document.querySelector('input[name="flexiStatus"]:checked').value;
       const pay = document.querySelector('input[name="flexiPay"]:checked').value;
-      currentStep = (status==='intl' && pay==='self') ? 'flexiStep2' : 'flexiStep3';
+      currentStep = (status === 'intl' && pay === 'self') ? 'flexiStep2' : 'flexiStep3';
       break;
-    case 'flexiStep5': currentStep='flexiStep4'; break;
+    case 'flexiStep5': currentStep = 'flexiStep4'; break;
   }
   document.getElementById(currentStep).classList.add('active');
 }
 
+// Show final result for MSc Coursework
 function calculateMSC() {
+  // Get user selections
   let status = document.querySelector('input[name="mscStatus"]:checked').value;
-  let aid = (status==='intl') ? 'no' : document.querySelector('input[name="mscAid"]:checked').value;
+  // For intl, no financial aid question - assume no aid
+  let aid = (status === 'scspr') ? document.querySelector('input[name="mscAid"]:checked').value : 'no';
   let alumni = document.querySelector('input[name="mscAlumni"]:checked').value;
 
-  let baseFee = status==='intl'? 30000 : 15000;
-  let aidAmount = (aid==='yes') ? 15000 : 0;
-  let alumniDiscount = (alumni==='yes') ? 0.1*baseFee : 0;
-  let total = baseFee - aidAmount - alumniDiscount;
+  // Base tuition fees fixed here (can be adjusted to actual fees)
+  let baseFee = (status === 'intl') ? 30000 : 15000;
+  // Financial aid amount set; official top-up 15,000, apply if aid==='yes'
+  let aidAmount = (aid === 'yes') ? 15000 : 0;
+  // Alumni rebate is 10% of base fee if applicable
+  let alumniDiscount = (alumni === 'yes') ? 0.10 * baseFee : 0;
 
-  showResult(`<h3>Estimated MSc Tuition Fee</h3>
-  <table>
-    <tr><th>Item</th><th>Amount (S$)</th></tr>
-    <tr><td>Base Tuition Fee</td><td>${baseFee.toLocaleString()}</td></tr>
-    <tr><td>Financial Aid</td><td>${aidAmount.toLocaleString()}</td></tr>
-    <tr><td>Alumni Discount</td><td>${alumniDiscount.toLocaleString()}</td></tr>
-    <tr><th>Total Estimated Fee</th><th>${total.toLocaleString()}</th></tr>
-  </table>
-  <div class="button-container"><button class="restart" onclick="restart()">Start Over</button></div>`);
+  // Calculate final payable, ensuring non-negative
+  let total = baseFee - aidAmount - alumniDiscount;
+  if(total < 0) total = 0;
+
+  // Build HTML with subsidy breakdown table
+  showResult(`
+    <h3>Estimated MSc Tuition Fee</h3>
+    <table>
+      <tr><th>Item</th><th>Amount (S$)</th></tr>
+      <tr><td>Base Tuition Fee</td><td>${baseFee.toLocaleString(undefined, {minimumFractionDigits:2})}</td></tr>
+      <tr><td>Financial Aid</td><td>-${aidAmount.toLocaleString(undefined, {minimumFractionDigits:2})}</td></tr>
+      <tr><td>Alumni Discount</td><td>-${alumniDiscount.toLocaleString(undefined, {minimumFractionDigits:2})}</td></tr>
+      <tr><th>Total Estimated Fee</th><th>${total.toLocaleString(undefined, {minimumFractionDigits:2})}</th></tr>
+    </table>
+    <div class="button-container"><button class="restart" onclick="restart()">Start Over</button></div>
+  `);
 }
 
+// Show final result for Flexi Masters
 function calculateFlexi() {
   let status = document.querySelector('input[name="flexiStatus"]:checked').value;
   let pay = document.querySelector('input[name="flexiPay"]:checked').value;
-  let funding = (status==='intl' && pay==='self') ? '' : document.querySelector('input[name="flexiFunding"]:checked').value;
+
+  // Funding scheme is empty string if path doesn't include it (intl self-funded)
+  let funding = (status === 'intl' && pay === 'self') ? '' : document.querySelector('input[name="flexiFunding"]:checked').value;
   let alumni = document.querySelector('input[name="flexiAlumni"]:checked').value;
-  let sf = (status==='intl' && pay==='self') ? 'no' : document.querySelector('input[name="flexiSF"]:checked').value;
-  let sfAmount = parseFloat(document.getElementById('sfAmount').value)||0;
+  let sf = (status === 'intl' && pay === 'self') ? 'no' : document.querySelector('input[name="flexiSF"]:checked').value;
+  let sfAmount = parseFloat(document.getElementById('sfAmount').value) || 0;
 
   let fee = 0;
   let fundingName = 'None';
-  if(funding==='ssg70') { fee=8423.52; fundingName='SSG up to 70%'; }
-  else if(funding==='etss') { fee=3271.52; fundingName='ETSS'; }
-  else if(funding==='mces') { fee=3271.52; fundingName='MCES'; }
-  else { fee=0; }
 
-  let alumniDiscount = (alumni==='yes') ? 1600 : 0;
-  let sfDeduction = (sf==='yes') ? sfAmount : 0;
+  // Set base fee & funding name based on scheme selected
+  if(funding === 'ssg70') {
+    fee = 8423.52;
+    fundingName = 'SSG up to 70%';
+  } else if(funding === 'etss') {
+    fee = 3271.52;
+    fundingName = 'ETSS';
+  } else if(funding === 'mces') {
+    fee = 3271.52;
+    fundingName = 'MCES';
+  } else if (status === 'intl' && pay === 'self'){
+    // For international self funded Flexi, base fee approximated here
+    fee = 28078.40;  // assuming full fee
+    fundingName = 'Self-funded International - No funding scheme';
+  }
+
+  // Alumni discount fixed amount where applicable
+  let alumniDiscount = (alumni === 'yes') ? 1600 : 0;
+  // SkillsFuture deduction conditional
+  let sfDeduction = (sf === 'yes') ? sfAmount : 0;
   let total = fee - alumniDiscount - sfDeduction;
-  if(total<0) total=0;
+  if(total < 0) total = 0;
 
-  showResult(`<h3>Estimated Flexi Masters Tuition Fee</h3>
-  <table>
-    <tr><th>Item</th><th>Amount (S$)</th></tr>
-    <tr><td>Funding Scheme (${fundingName})</td><td>${fee.toLocaleString()}</td></tr>
-    <tr><td>Alumni Discount</td><td>${alumniDiscount.toLocaleString()}</td></tr>
-    <tr><td>SkillsFuture Credits Applied</td><td>${sfDeduction.toLocaleString()}</td></tr>
-    <tr><th>Total Estimated Fee</th><th>${total.toLocaleString()}</th></tr>
-  </table>
-  <div class="button-container"><button class="restart" onclick="restart()">Start Over</button></div>`);
+  // Build HTML table breakdown
+  showResult(`
+    <h3>Estimated Flexi Masters Tuition Fee</h3>
+    <table>
+      <tr><th>Item</th><th>Amount (S$)</th></tr>
+      <tr><td>Funding Scheme (${fundingName})</td><td>${fee.toLocaleString(undefined, {minimumFractionDigits:2})}</td></tr>
+      <tr><td>Alumni Discount</td><td>-${alumniDiscount.toLocaleString(undefined, {minimumFractionDigits:2})}</td></tr>
+      <tr><td>SkillsFuture Credits Applied</td><td>-${sfDeduction.toLocaleString(undefined, {minimumFractionDigits:2})}</td></tr>
+      <tr><th>Total Estimated Fee</th><th>${total.toLocaleString(undefined, {minimumFractionDigits:2})}</th></tr>
+    </table>
+    <div class="button-container"><button class="restart" onclick="restart()">Start Over</button></div>
+  `);
 }
 
+// Helper to hide steps and display results
 function showResult(html) {
-  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
   const r = document.getElementById('result');
-  r.style.display='block';
+  r.style.display = 'block';
   r.innerHTML = html;
 }
 
+// Reset calculator to initial step with no selections
 function restart() {
-  document.getElementById('result').style.display='none';
-  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('result').style.display = 'none';
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
   document.getElementById('step0').classList.add('active');
+  document.querySelectorAll('input[type="radio"]').forEach(i => i.checked = false);
+  document.getElementById('sfAmount').value = 0;
 }
 </script>
-
+</div>
 </body>
 </html>
