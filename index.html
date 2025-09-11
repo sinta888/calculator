@@ -86,10 +86,8 @@
 </style>
 </head>
 <body>
-
 <div class="container">
 <h1>NTU EEE MSc Tuition Fee Calculator</h1>
-
 <!-- Step 1: Programme Type -->
 <div class="calculator-step active" id="step-programme">
   <h3>Select Programme</h3>
@@ -103,7 +101,6 @@
     <button class="edb-pri-btn" onclick="nextStep('step-programme')">Next</button>
   </div>
 </div>
-
 <!-- Step 2: Student Type -->
 <div class="calculator-step" id="step-student-type">
   <h3>Student Type</h3>
@@ -121,7 +118,6 @@
     <button class="edb-pri-btn" onclick="nextStep('step-student-type')">Next</button>
   </div>
 </div>
-
 <!-- Step 3: Flexi Masters Funding (conditional) -->
 <div class="calculator-step" id="step-funding">
   <h3>Select Funding Type</h3>
@@ -136,7 +132,6 @@
     <button class="edb-pri-btn" onclick="nextStep('step-funding')">Next</button>
   </div>
 </div>
-
 <!-- Step 4: SkillsFuture / ETSS (conditional) -->
 <div class="calculator-step" id="step-sf-etss">
   <h3 id="sf-etss-question">Do you want to use SkillsFuture Credits?</h3>
@@ -151,7 +146,6 @@
     <button class="edb-pri-btn" onclick="nextStep('step-sf-etss')">Next</button>
   </div>
 </div>
-
 <!-- Step 5: Financial Aid (MSc only) -->
 <div class="calculator-step" id="step-financial-aid">
   <h3>Are you eligible for financial aid?</h3>
@@ -169,7 +163,6 @@
     <button class="edb-pri-btn" onclick="nextStep('step-financial-aid')">Next</button>
   </div>
 </div>
-
 <!-- Step 6: Result -->
 <div class="calculator-step" id="step-result">
   <h3>Estimated Tuition Fee</h3>
@@ -178,11 +171,9 @@
     <button class="edb-pri-btn restart" onclick="startOver()">Start Over</button>
   </div>
 </div>
-
 <script>
 let currentStep = 0;
 const steps = document.querySelectorAll('.calculator-step');
-
 function showStep(index) {
   steps.forEach(step => step.classList.remove('active'));
   if (index >= 0 && index < steps.length) {
@@ -190,45 +181,73 @@ function showStep(index) {
     currentStep = index;
   }
 }
-
 function nextStep(stepId) {
   const programme = document.querySelector('input[name="programme"]:checked')?.value;
   const studentType = document.querySelector('input[name="studentType"]:checked')?.value;
   const funding = document.querySelector('input[name="funding"]:checked')?.value;
+  const sfEtss = document.querySelector('input[name="sfEtss"]:checked')?.value;
+  const financialAid = document.querySelector('input[name="financialAid"]:checked')?.value;
 
   if(stepId === 'step-programme') {
     if(!programme) { alert('Please select a programme'); return; }
-    showStep(1);
-  } else if(stepId === 'step-student-type') {
-    if(!studentType) { alert('Please select a student type'); return; }
-    if(programme === 'msc') showStep(5);
-    else if(programme === 'flexi') {
-      if(studentType === 'Intl') showStep(6);
-      else showStep(2);
+    if(programme === 'msc') {
+      showStep(1); // Go to student type
+    } else if(programme === 'flexi') {
+      showStep(1); // Go to student type
     }
-  } else if(stepId === 'step-funding') {
+  }
+  else if(stepId === 'step-student-type') {
+    if(!studentType) { alert('Please select a student type'); return; }
+    if(programme === 'msc') {
+      showStep(4); // MSc goes to financial aid step
+    } else if(programme === 'flexi') {
+      if(studentType === 'Intl') {
+        showStep(6); // Directly to result for Intl Flexi Masters
+      } else {
+        showStep(2); // Flexi local goes to funding step
+      }
+    }
+  }
+  else if(stepId === 'step-funding') {
     if(!funding) { alert('Please select funding type'); return; }
-    showStep(3);
-  } else if(stepId === 'step-sf-etss') showStep(6);
-  else if(stepId === 'step-financial-aid') showStep(6);
-
-  calculateResult();
+    showStep(3); // Go to SkillsFuture / ETSS step
+  }
+  else if(stepId === 'step-sf-etss') {
+    if(!sfEtss) { alert('Please select yes or no'); return; }
+    showStep(6); // Result step
+    calculateResult();
+    return;
+  }
+  else if(stepId === 'step-financial-aid') {
+    if(!financialAid) { alert('Please select financial aid eligibility'); return; }
+    showStep(6); // Result step
+    calculateResult();
+    return;
+  }
 }
-
 function prevStep(stepId) {
-  if(stepId === 'step-student-type') showStep(0);
-  else if(stepId === 'step-funding') showStep(1);
-  else if(stepId === 'step-sf-etss') showStep(2);
-  else if(stepId === 'step-financial-aid') showStep(1);
-}
+  const programme = document.querySelector('input[name="programme"]:checked')?.value;
+  const studentType = document.querySelector('input[name="studentType"]:checked')?.value;
 
+  if(stepId === 'step-student-type') {
+    showStep(0);
+  }
+  else if(stepId === 'step-funding') {
+    showStep(1);
+  }
+  else if(stepId === 'step-sf-etss') {
+    showStep(2);
+  }
+  else if(stepId === 'step-financial-aid') {
+    showStep(1);
+  }
+}
 function startOver() {
   steps.forEach(step => step.classList.remove('active'));
   steps[0].classList.add('active');
   document.querySelectorAll('input').forEach(input => input.checked = false);
   document.getElementById('result-content').innerHTML = '';
 }
-
 function calculateResult() {
   const programme = document.querySelector('input[name="programme"]:checked')?.value;
   const studentType = document.querySelector('input[name="studentType"]:checked')?.value;
@@ -239,34 +258,43 @@ function calculateResult() {
   let html = '';
 
   if(programme === 'msc') {
-    let total = 56156.8;
+    const total = 56156.80;
     let subsidy = 0;
+
     if(studentType === 'SC' || studentType === 'PR') {
       subsidy += 5000;
-      if(financialAid === 'yes') subsidy += 10000;
+      if(financialAid === 'yes') {
+        subsidy += 10000; // For AY2024, change to 15000 for AY2025+
+        // subsidy += 15000; // Uncomment for AY2025 and later top-up
+      }
     }
+
     html += `<table>
       <tr><th>Item</th><th>Amount (S$)</th></tr>
       <tr><td>Tuition Fee</td><td>${total.toFixed(2)}</td></tr>
       <tr><td>Subsidy / Financial Aid</td><td>${subsidy.toFixed(2)}</td></tr>
-      <tr><td>Payable Tuition Fee</td><td>${(total - subsidy).toFixed(2)}</td></tr>
+      <tr><td>Payable Tuition Fee</td><td>${Math.max(0, total - subsidy).toFixed(2)}</td></tr>
     </table>`;
-  } else if(programme === 'flexi') {
-    let total = 28078.40;
+  }
+  else if(programme === 'flexi') {
+    const total = 28078.40;
     let subsidy = 0;
-    if(studentType === 'SC' || studentType === 'PR') subsidy = 0.7 * total;
+
+    if(studentType === 'SC' || studentType === 'PR') {
+      subsidy = 0.7 * total;  // 70% funding support for local students
+    }
+
     html += `<table>
       <tr><th>Item</th><th>Amount (S$)</th></tr>
       <tr><td>Programme Fee (incl. GST)</td><td>${total.toFixed(2)}</td></tr>
       <tr><td>Subsidy</td><td>${subsidy.toFixed(2)}</td></tr>
-      <tr><td>Payable Fee</td><td>${(total - subsidy).toFixed(2)}</td></tr>
+      <tr><td>Payable Fee</td><td>${Math.max(0, total - subsidy).toFixed(2)}</td></tr>
     </table>`;
   }
 
   document.getElementById('result-content').innerHTML = html;
 }
 </script>
-
 </div>
 </body>
 </html>
