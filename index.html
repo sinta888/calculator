@@ -41,13 +41,15 @@
   }
   button.next { background: #D71440; color: #fff; }
   button.back { background: #181C62; color: #fff; }
+  button.restart { background: #8c8c8c; color: #fff; }
   label { display: block; margin: 10px 0; cursor: pointer; }
+  .info-link { font-size: 12px; color: #8c8c8c; margin-left: 10px; display:inline-block; }
   input[type="number"] { width: 80px; padding: 3px; margin-left: 5px; }
   .result {
     margin-top: 30px;
     padding: 20px;
     border: 1px solid #c8c8c8;
-    font-family: monospace;
+    font-family: Arial, sans-serif;
   }
   table {
     width: 100%;
@@ -93,9 +95,12 @@
 
 <div class="step" id="mscStep2">
   <h3>Are you eligible for financial aid? (SC/SPR only)</h3>
-  <label><input type="radio" name="mscAid" value="no" checked> No</label>
-  <label><input type="radio" name="mscAid" value="yes"> Yes (up to S$15,000)
-    <small>More info: <a href="https://www.ntu.edu.sg/admissions/graduate/financialmatters/ntupgi#Content_C017_Col00" target="_blank">NTU Financial Aid</a></small>
+  <label>
+    <input type="radio" name="mscAid" value="no" checked> No
+  </label>
+  <label>
+    <input type="radio" name="mscAid" value="yes"> Yes
+    <span class="info-link"><a href="https://www.ntu.edu.sg/admissions/graduate/financialmatters/ntupgi#Content_C017_Col00" target="_blank">More info: NTU Financial Aid</a></span>
   </label>
   <div class="button-container">
     <button class="back" onclick="prevStep('mscStep2')">Back</button>
@@ -109,7 +114,7 @@
   <label><input type="radio" name="mscAlumni" value="yes"> Yes (10% rebate)</label>
   <div class="button-container">
     <button class="back" onclick="prevStep('mscStep3')">Back</button>
-    <button class="next" onclick="nextStep('mscStep3')">Calculate</button>
+    <button class="next" onclick="calculateMSC()">Calculate</button>
   </div>
 </div>
 
@@ -169,8 +174,6 @@
 
 <div class="result" id="result" style="display:none;"></div>
 
-</div>
-
 <script>
 let currentStep = 'step0';
 
@@ -182,19 +185,27 @@ function nextStep(step) {
 
   document.getElementById(step).classList.remove('active');
 
-  switch(step) {
-    case 'step0':
-      const programme = document.querySelector('input[name="programme"]:checked').value;
-      if(programme==='msc') { currentStep='mscStep1'; } else { currentStep='flexiStep1'; }
-      break;
-    case 'mscStep1': currentStep='mscStep2'; break;
-    case 'mscStep2': currentStep='mscStep3'; break;
-    case 'mscStep3': calculateMSC(); return;
-    case 'flexiStep1': currentStep='flexiStep2'; break;
-    case 'flexiStep2': currentStep='flexiStep3'; break;
-    case 'flexiStep3': currentStep='flexiStep4'; break;
-    case 'flexiStep4': currentStep='flexiStep5'; break;
-  }
+  // MSc logic
+  if(step==='step0') {
+    const programme = document.querySelector('input[name="programme"]:checked').value;
+    if(programme==='msc') { currentStep='mscStep1'; } else { currentStep='flexiStep1'; }
+  } 
+  else if(step==='mscStep1') {
+    const status = document.querySelector('input[name="mscStatus"]:checked').value;
+    currentStep = (status==='intl') ? 'mscStep3' : 'mscStep2';
+  } 
+  else if(step==='mscStep2') currentStep='mscStep3';
+  else if(step==='mscStep3') { calculateMSC(); return; }
+  // Flexi logic
+  else if(step==='flexiStep1') currentStep='flexiStep2';
+  else if(step==='flexiStep2') {
+    const status = document.querySelector('input[name="flexiStatus"]:checked').value;
+    const pay = document.querySelector('input[name="flexiPay"]:checked').value;
+    currentStep = (status==='intl' && pay==='self') ? 'flexiStep4' : 'flexiStep3';
+  } 
+  else if(step==='flexiStep3') currentStep='flexiStep4';
+  else if(step==='flexiStep4') currentStep='flexiStep5';
+  else if(step==='flexiStep5') { calculateFlexi(); return; }
 
   document.getElementById(currentStep).classList.add('active');
 }
@@ -204,11 +215,15 @@ function prevStep(step) {
   switch(step) {
     case 'mscStep1': currentStep='step0'; break;
     case 'mscStep2': currentStep='mscStep1'; break;
-    case 'mscStep3': currentStep='mscStep2'; break;
+    case 'mscStep3': currentStep='mscStep1'; break;
     case 'flexiStep1': currentStep='step0'; break;
     case 'flexiStep2': currentStep='flexiStep1'; break;
     case 'flexiStep3': currentStep='flexiStep2'; break;
-    case 'flexiStep4': currentStep='flexiStep3'; break;
+    case 'flexiStep4': 
+      const status = document.querySelector('input[name="flexiStatus"]:checked').value;
+      const pay = document.querySelector('input[name="flexiPay"]:checked').value;
+      currentStep = (status==='intl' && pay==='self') ? 'flexiStep2' : 'flexiStep3';
+      break;
     case 'flexiStep5': currentStep='flexiStep4'; break;
   }
   document.getElementById(currentStep).classList.add('active');
@@ -216,41 +231,67 @@ function prevStep(step) {
 
 function calculateMSC() {
   let status = document.querySelector('input[name="mscStatus"]:checked').value;
-  let aid = document.querySelector('input[name="mscAid"]:checked').value;
+  let aid = (status==='intl') ? 'no' : document.querySelector('input[name="mscAid"]:checked').value;
   let alumni = document.querySelector('input[name="mscAlumni"]:checked').value;
 
   let baseFee = status==='intl'? 30000 : 15000;
-  if(aid==='yes') baseFee -= 15000;
-  if(alumni==='yes') baseFee *= 0.9;
+  let aidAmount = (aid==='yes') ? 15000 : 0;
+  let alumniDiscount = (alumni==='yes') ? 0.1*baseFee : 0;
+  let total = baseFee - aidAmount - alumniDiscount;
 
-  showResult(`Estimated MSc Tuition Fee: S$${baseFee.toLocaleString()}`);
+  showResult(`<h3>Estimated MSc Tuition Fee</h3>
+  <table>
+    <tr><th>Item</th><th>Amount (S$)</th></tr>
+    <tr><td>Base Tuition Fee</td><td>${baseFee.toLocaleString()}</td></tr>
+    <tr><td>Financial Aid</td><td>${aidAmount.toLocaleString()}</td></tr>
+    <tr><td>Alumni Discount</td><td>${alumniDiscount.toLocaleString()}</td></tr>
+    <tr><th>Total Estimated Fee</th><th>${total.toLocaleString()}</th></tr>
+  </table>
+  <div class="button-container"><button class="restart" onclick="restart()">Start Over</button></div>`);
 }
 
 function calculateFlexi() {
   let status = document.querySelector('input[name="flexiStatus"]:checked').value;
   let pay = document.querySelector('input[name="flexiPay"]:checked').value;
-  let funding = document.querySelector('input[name="flexiFunding"]:checked').value;
+  let funding = (status==='intl' && pay==='self') ? '' : document.querySelector('input[name="flexiFunding"]:checked').value;
   let alumni = document.querySelector('input[name="flexiAlumni"]:checked').value;
-  let sf = document.querySelector('input[name="flexiSF"]:checked').value;
+  let sf = (status==='intl' && pay==='self') ? 'no' : document.querySelector('input[name="flexiSF"]:checked').value;
   let sfAmount = parseFloat(document.getElementById('sfAmount').value)||0;
 
   let fee = 0;
-  if(funding==='ssg70') fee=8423.52;
-  else if(funding==='etss') fee=3271.52;
-  else if(funding==='mces') fee=3271.52;
+  let fundingName = 'None';
+  if(funding==='ssg70') { fee=8423.52; fundingName='SSG up to 70%'; }
+  else if(funding==='etss') { fee=3271.52; fundingName='ETSS'; }
+  else if(funding==='mces') { fee=3271.52; fundingName='MCES'; }
+  else { fee=0; }
 
-  if(alumni==='yes') fee -= 1600;
-  if(sf==='yes') fee -= sfAmount;
-  if(fee<0) fee=0;
+  let alumniDiscount = (alumni==='yes') ? 1600 : 0;
+  let sfDeduction = (sf==='yes') ? sfAmount : 0;
+  let total = fee - alumniDiscount - sfDeduction;
+  if(total<0) total=0;
 
-  showResult(`Estimated Flexi Masters Tuition Fee: S$${fee.toLocaleString()}`);
+  showResult(`<h3>Estimated Flexi Masters Tuition Fee</h3>
+  <table>
+    <tr><th>Item</th><th>Amount (S$)</th></tr>
+    <tr><td>Funding Scheme (${fundingName})</td><td>${fee.toLocaleString()}</td></tr>
+    <tr><td>Alumni Discount</td><td>${alumniDiscount.toLocaleString()}</td></tr>
+    <tr><td>SkillsFuture Credits Applied</td><td>${sfDeduction.toLocaleString()}</td></tr>
+    <tr><th>Total Estimated Fee</th><th>${total.toLocaleString()}</th></tr>
+  </table>
+  <div class="button-container"><button class="restart" onclick="restart()">Start Over</button></div>`);
 }
 
-function showResult(text) {
+function showResult(html) {
   document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
   const r = document.getElementById('result');
   r.style.display='block';
-  r.innerHTML = `<strong>${text}</strong>`;
+  r.innerHTML = html;
+}
+
+function restart() {
+  document.getElementById('result').style.display='none';
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('step0').classList.add('active');
 }
 </script>
 
