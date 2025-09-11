@@ -170,7 +170,7 @@
 function nextStep(step) {
   // Validate user selected an option for current step
   const radios = document.querySelectorAll(`#${step} input[type="radio"]`);
-   selected = false;
+  let selected = false;
   radios.forEach(r => { if(r.checked) selected = true; });
   if(!selected) { alert("Please select an option to proceed."); return; }
 
