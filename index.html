@@ -365,8 +365,14 @@ function showResult(html) {
   document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
   const r = document.getElementById('result');
   r.style.display = 'block';
-  r.innerHTML = html;
+  r.innerHTML = html + `
+    <div class="disclaimer" style="margin-top:10px; font-size:12px; color:#555;">
+      *Note: This calculator provides estimated tuition fees for reference purposes only and should not be considered an official statement of fees. 
+      Actual fees, subsidies, and alumni credits are subject to changes and official confirmation by NTU Continuing Education and Training units.
+    </div>
+  `;
 }
+
 
 function restart() {
   document.getElementById('result').style.display = 'none';
