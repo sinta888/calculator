@@ -212,8 +212,15 @@ function nextStep(step) {
     currentStep = 'flexiStep4';
   }
   else if(step === 'flexiStep4') {
+  let status = document.querySelector('input[name="flexiStatus"]:checked').value;
+  if(status === 'intl') {
+    // Skip SkillsFuture step for international, calculate directly
+    calculateFlexi();
+    return;
+  } else {
     currentStep = 'flexiStep5';
   }
+}
   else if(step === 'flexiStep5') {
     // Calculate and show result for Flexi Masters
     calculateFlexi();
