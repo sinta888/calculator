@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>NTU EEE MSc Tuition Fee Calculator</title>
+<title>EEE MSc Tuition Fee Calculator</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -164,8 +164,7 @@
 <div class="result" id="result" style="display:none;"></div>
 <script>
 // Keep track of current active step
- currentStep = 'step0';
-
+let currentStep = 'step0';
 // Function to proceed to the next step based on current step and inputs
 function nextStep(step) {
   // Validate user selected an option for current step
@@ -173,10 +172,8 @@ function nextStep(step) {
   let selected = false;
   radios.forEach(r => { if(r.checked) selected = true; });
   if(!selected) { alert("Please select an option to proceed."); return; }
-
   // Hide current step
   document.getElementById(step).classList.remove('active');
-
   // Logic to determine next step based on current and inputs
   // MSc path
   if(step === 'step0') { 
@@ -222,11 +219,9 @@ function nextStep(step) {
     calculateFlexi();
     return; // end flow here
   }
-
   // Show next step determined above
   document.getElementById(currentStep).classList.add('active');
 }
-
 // Function to go back to previous step based on current step
 function prevStep(step) {
   document.getElementById(step).classList.remove('active');
@@ -246,73 +241,60 @@ function prevStep(step) {
   }
   document.getElementById(currentStep).classList.add('active');
 }
-
 // Show final result for MSc Coursework
 function calculateMSC() {
-  // Get user selections
-   status = document.querySelector('input[name="mscStatus"]:checked').value;
-  // For intl, no financial aid question - assume no aid
-   financialAid = (status === 'scspr') ? document.querySelector('input[name="mscAid"]:checked').value : 'no';
+  // Declare variables properly
+  let status = document.querySelector('input[name="mscStatus"]:checked').value;
+  let financialAid = (status === 'scspr') ? document.querySelector('input[name="mscAid"]:checked').value : 'no';
   let alumni = document.querySelector('input[name="mscAlumni"]:checked').value;
 
+  // Calculate tuition fee for MSc
+  const baseFee = 56156.80; // official total tuition fee
+  let scprSubsidy = 0;
+  let additionalAid = 0;
 
-// Calculates the final payable MSc tuition fee 
-const baseFee = 56156.80; // official total tuition fee
-
-let scprSubsidy = 0;
-let additionalAid = 0;
-
-// Apply SC/PR base subsidy if applicable
-if(status === 'scspr') {
-  scprSubsidy = 5000; // base subsidy always applies to SC/PR
-  if(financialAid === 'yes') {
-    additionalAid = 10000; // extra aid on top of base to make total 15,000
+  if(status === 'scspr') {
+    scprSubsidy = 5000; // base subsidy always applies to SC/PR
+    if(financialAid === 'yes') {
+      additionalAid = 10000; // extra aid on top of base to make total 15,000
+    }
   }
+
+  let feeAfterSubsidies = baseFee - scprSubsidy - additionalAid;
+  if(feeAfterSubsidies < 0) feeAfterSubsidies = 0;
+
+  let alumniDiscount = 0;
+  if(alumni === 'yes') {
+    alumniDiscount = 0.10 * feeAfterSubsidies;
+  }
+
+  const totalPayable = feeAfterSubsidies - alumniDiscount;
+  if(totalPayable < 0) totalPayable = 0;
+
+  showResult(`
+    <h3>Estimated MSc Tuition Fee</h3>
+    <table>
+      <tr><th>Item</th><th>Amount (S$)</th></tr>
+      <tr><td>Base Tuition Fee</td><td>${baseFee.toLocaleString(undefined, {minimumFractionDigits:2})}</td></tr>
+      <tr><td>SC/PR Subsidy</td><td>-${scprSubsidy.toLocaleString(undefined, {minimumFractionDigits:2})}</td></tr>
+      <tr><td>Additional Financial Aid</td><td>-${additionalAid.toLocaleString(undefined, {minimumFractionDigits:2})}</td></tr>
+      <tr><td>Alumni Discount</td><td>-${alumniDiscount.toLocaleString(undefined, {minimumFractionDigits:2})}</td></tr>
+      <tr><th>Total Estimated Fee</th><th>${totalPayable.toLocaleString(undefined, {minimumFractionDigits:2})}</th></tr>
+    </table>
+    <div class="button-container"><button class="restart" onclick="restart()">Start Over</button></div>
+  `);
 }
-
-// Calculate fee after subsidies
-let feeAfterSubsidies = baseFee - scprSubsidy - additionalAid;
-if(feeAfterSubsidies < 0) feeAfterSubsidies = 0;
-
-// Alumni rebate 10% of fee after subsidies
-let alumniDiscount = 0;
-if(alumni === 'yes') {
-  alumniDiscount = 0.10 * feeAfterSubsidies;
-}
-
-const totalPayable = feeAfterSubsidies - alumniDiscount;
-if(totalPayable < 0) totalPayable = 0;
-
-// Build HTML with distinct subsidy rows
-showResult(`
-  <h3>Estimated MSc Tuition Fee</h3>
-  <table>
-    <tr><th>Item</th><th>Amount (S$)</th></tr>
-    <tr><td>Base Tuition Fee</td><td>${baseFee.toLocaleString(undefined, {minimumFractionDigits:2})}</td></tr>
-    <tr><td>SC/PR Subsidy</td><td>-${scprSubsidy.toLocaleString(undefined, {minimumFractionDigits:2})}</td></tr>
-    <tr><td>Additional Financial Aid</td><td>-${additionalAid.toLocaleString(undefined, {minimumFractionDigits:2})}</td></tr>
-    <tr><td>Alumni Discount</td><td>-${alumniDiscount.toLocaleString(undefined, {minimumFractionDigits:2})}</td></tr>
-    <tr><th>Total Estimated Fee</th><th>${totalPayable.toLocaleString(undefined, {minimumFractionDigits:2})}</th></tr>
-  </table>
-  <div class="button-container"><button class="restart" onclick="restart()">Start Over</button></div>
-`);
-
-
 // Show final result for Flexi Masters
 function calculateFlexi() {
   let status = document.querySelector('input[name="flexiStatus"]:checked').value;
   let pay = document.querySelector('input[name="flexiPay"]:checked').value;
-
-  // Funding scheme is empty string if path doesn't include it (intl self-funded)
   let funding = (status === 'intl' && pay === 'self') ? '' : document.querySelector('input[name="flexiFunding"]:checked').value;
   let alumni = document.querySelector('input[name="flexiAlumni"]:checked').value;
   let sf = (status === 'intl' && pay === 'self') ? 'no' : document.querySelector('input[name="flexiSF"]:checked').value;
   let sfAmount = parseFloat(document.getElementById('sfAmount').value) || 0;
-
   let fee = 0;
   let fundingName = 'None';
 
-  // Set base fee & funding name based on scheme selected
   if(funding === 'ssg70') {
     fee = 8423.52;
     fundingName = 'SSG up to 70%';
@@ -323,19 +305,15 @@ function calculateFlexi() {
     fee = 3271.52;
     fundingName = 'MCES';
   } else if (status === 'intl' && pay === 'self'){
-    // For international self funded Flexi, base fee approximated here
     fee = 28078.40;  // assuming full fee
     fundingName = 'Self-funded International - No funding scheme';
   }
 
-  // Alumni discount fixed amount where applicable
   let alumniDiscount = (alumni === 'yes') ? 1600 : 0;
-  // SkillsFuture deduction conditional
   let sfDeduction = (sf === 'yes') ? sfAmount : 0;
   let total = fee - alumniDiscount - sfDeduction;
   if(total < 0) total = 0;
 
-  // Build HTML table breakdown
   showResult(`
     <h3>Estimated Flexi Masters Tuition Fee</h3>
     <table>
@@ -349,7 +327,6 @@ function calculateFlexi() {
   `);
 }
 
-// Helper to hide steps and display results
 function showResult(html) {
   document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
   const r = document.getElementById('result');
@@ -357,7 +334,6 @@ function showResult(html) {
   r.innerHTML = html;
 }
 
-// Reset calculator to initial step with no selections
 function restart() {
   document.getElementById('result').style.display = 'none';
   document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
