@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>NTU Tuition Fee Calculator</title>
+<title>NTU EEE MSc Tuition Fee Calculator</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -164,13 +164,13 @@
 <div class="result" id="result" style="display:none;"></div>
 <script>
 // Keep track of current active step
-let currentStep = 'step0';
+ currentStep = 'step0';
 
 // Function to proceed to the next step based on current step and inputs
 function nextStep(step) {
   // Validate user selected an option for current step
   const radios = document.querySelectorAll(`#${step} input[type="radio"]`);
-  let selected = false;
+   selected = false;
   radios.forEach(r => { if(r.checked) selected = true; });
   if(!selected) { alert("Please select an option to proceed."); return; }
 
@@ -250,44 +250,52 @@ function prevStep(step) {
 // Show final result for MSc Coursework
 function calculateMSC() {
   // Get user selections
-  let status = document.querySelector('input[name="mscStatus"]:checked').value;
+   status = document.querySelector('input[name="mscStatus"]:checked').value;
   // For intl, no financial aid question - assume no aid
-  let financialAid = (status === 'scspr') ? document.querySelector('input[name="mscAid"]:checked').value : 'no';
+   financialAid = (status === 'scspr') ? document.querySelector('input[name="mscAid"]:checked').value : 'no';
   let alumni = document.querySelector('input[name="mscAlumni"]:checked').value;
 
-  //Calculates the final payable MSc tuition fee 
-  const baseFee = 56156.80; // official total tuition fee
-  let subsidy = 0;
-  // For SC/PR students, apply subsidy
-  if(status === 'scspr') {
-    if(financialAid === 'yes') {
-      subsidy = 15000; // financial aid includes base 5000
-    } else {
-      subsidy = 5000; // base subsidy only
-    }
+
+// Calculates the final payable MSc tuition fee 
+const baseFee = 56156.80; // official total tuition fee
+
+let scprSubsidy = 0;
+let additionalAid = 0;
+
+// Apply SC/PR base subsidy if applicable
+if(status === 'scspr') {
+  scprSubsidy = 5000; // base subsidy always applies to SC/PR
+  if(financialAid === 'yes') {
+    additionalAid = 10000; // extra aid on top of base to make total 15,000
   }
-  let feeAfterSubsidy = baseFee - subsidy;
-  if(feeAfterSubsidy < 0) feeAfterSubsidy = 0;
-  // Alumni rebate 10% of fee after subsidy
-  let alumniDiscount = 0;
-  if(alumni === 'yes') {
-    alumniDiscount = 0.10 * feeAfterSubsidy;
-  }
-  const totalPayable = feeAfterSubsidy - alumniDiscount;
-  if(totalPayable < 0) totalPayable = 0;
-  // Build HTML with subsidy breakdown table
-  showResult(`
-    <h3>Estimated MSc Tuition Fee</h3>
-    <table>
-      <tr><th>Item</th><th>Amount (S$)</th></tr>
-      <tr><td>Base Tuition Fee</td><td>${baseFee.toLocaleString(undefined, {minimumFractionDigits:2})}</td></tr>
-      <tr><td>Financial Aid</td><td>-${subsidy.toLocaleString(undefined, {minimumFractionDigits:2})}</td></tr>
-      <tr><td>Alumni Discount</td><td>-${alumniDiscount.toLocaleString(undefined, {minimumFractionDigits:2})}</td></tr>
-      <tr><th>Total Estimated Fee</th><th>${totalPayable.toLocaleString(undefined, {minimumFractionDigits:2})}</th></tr>
-    </table>
-    <div class="button-container"><button class="restart" onclick="restart()">Start Over</button></div>
-  `);
 }
+
+// Calculate fee after subsidies
+let feeAfterSubsidies = baseFee - scprSubsidy - additionalAid;
+if(feeAfterSubsidies < 0) feeAfterSubsidies = 0;
+
+// Alumni rebate 10% of fee after subsidies
+let alumniDiscount = 0;
+if(alumni === 'yes') {
+  alumniDiscount = 0.10 * feeAfterSubsidies;
+}
+
+const totalPayable = feeAfterSubsidies - alumniDiscount;
+if(totalPayable < 0) totalPayable = 0;
+
+// Build HTML with distinct subsidy rows
+showResult(`
+  <h3>Estimated MSc Tuition Fee</h3>
+  <table>
+    <tr><th>Item</th><th>Amount (S$)</th></tr>
+    <tr><td>Base Tuition Fee</td><td>${baseFee.toLocaleString(undefined, {minimumFractionDigits:2})}</td></tr>
+    <tr><td>SC/PR Subsidy</td><td>-${scprSubsidy.toLocaleString(undefined, {minimumFractionDigits:2})}</td></tr>
+    <tr><td>Additional Financial Aid</td><td>-${additionalAid.toLocaleString(undefined, {minimumFractionDigits:2})}</td></tr>
+    <tr><td>Alumni Discount</td><td>-${alumniDiscount.toLocaleString(undefined, {minimumFractionDigits:2})}</td></tr>
+    <tr><th>Total Estimated Fee</th><th>${totalPayable.toLocaleString(undefined, {minimumFractionDigits:2})}</th></tr>
+  </table>
+  <div class="button-container"><button class="restart" onclick="restart()">Start Over</button></div>
+`);
 
 
 // Show final result for Flexi Masters
