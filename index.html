@@ -20,6 +20,7 @@
     .btn:hover { background: #b01035; }
     .rte { margin-top: 20px; }
     .eligibility-message { margin-top: 10px; font-size: 13px; color: #666; }
+    .muted { font-size: 12px; color: #666; margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -83,12 +84,22 @@
 
         <label for="skillsFuture">SkillsFuture Credits (S$)</label>
         <input type="number" id="skillsFuture" min="0" max="5000" value="0" />
+        <div class="muted">Applied only if self-funded & eligible; capped at S$5,000 for calculation.</div>
 
         <label for="continueMsc">Do you intend to pursue the MSc after FlexiMasters?</label>
         <select id="continueMsc">
           <option value="yes">Yes, I plan to continue to MSc</option>
           <option value="no">No, FlexiMasters only</option>
         </select>
+
+        <div id="mscAidFlexiWrap">
+          <label for="mscAidFlexi">If continuing to MSc, are you eligible for Financial Aid?</label>
+          <select id="mscAidFlexi">
+            <option value="no">No</option>
+            <option value="yes">Yes</option>
+          </select>
+          <div class="muted">This reduction applies to the MSc pathway stage for SC/PR only.</div>
+        </div>
       </div>
 
       <p style="text-align:center;">
@@ -100,97 +111,115 @@
   </div>
 
   <script>
-    // Constants (GST-inclusive)
+    // ===== Constants (GST-inclusive) =====
     const GST = 0.09;
-    const DIRECT_BASE = 56156.80;
 
-    // Flexi stage (funded totals)
-    const FLEXI_BASE = 28078.40;
-    const FLEXI_SSG70 = 8424.00;
+    // Direct MSc
+    const DIRECT_BASE = 56156.80;
+    const DIRECT_SCPR_REDUCTION_NO_AID = 5000;
+    const DIRECT_SCPR_REDUCTION_AID    = 15000;
+
+    // FlexiMasters stage (funded totals)
+    const FLEXI_BASE   = 28078.40; // none / international
+    const FLEXI_SSG70  = 8424.00;
     const FLEXI_MCES90 = 3272.00;
     const FLEXI_ETSS90 = 3272.00;
 
     // Alumni credit for Flexi stage: 1600 pre-GST => 1744 incl GST
-    const FLEXI_ALUMNI_CREDIT = 1600 * (1 + GST); // 1744
+    const FLEXI_ALUMNI_CREDIT = 1600 * (1 + GST); // 1744.00
 
-    // Self-financed MSc (modular pathway) stage
-    const MSC_PATH_BASE = 28078.40;     // same base as modular path
-    const MSC_PATH_SCPR_REDUCTION = 2500; // neutral “reduction” wording
+    // MSc pathway stage (modular route)
+    const MSC_PATH_BASE = 28078.40;
+    const MSC_SCPR_REDUCTION_NO_AID = 2500;
+    const MSC_SCPR_REDUCTION_AID    = 15000;
 
-    document.getElementById("pathway").addEventListener("change", function () {
-      const path = this.value;
+    // UI: show/hide MSc-aid select only when Flexi + continue = yes
+    document.getElementById("pathway").addEventListener("change", toggleFlexiUi);
+    document.getElementById("continueMsc").addEventListener("change", toggleFlexiUi);
+    function toggleFlexiUi(){
+      const path = document.getElementById("pathway").value;
+      const cont = document.getElementById("continueMsc").value;
+      const wrap = document.getElementById("mscAidFlexiWrap");
       document.getElementById("directFields").style.display = path === "direct" ? "block" : "none";
-      document.getElementById("flexiFields").style.display = path === "flexi" ? "block" : "none";
+      document.getElementById("flexiFields").style.display  = path === "flexi"  ? "block" : "none";
+      wrap.style.display = (path === "flexi" && cont === "yes") ? "block" : "none";
       document.getElementById("nettFee").innerHTML = "";
-    });
+    }
 
     function calculateFee() {
       const path = document.getElementById("pathway").value;
       let html = "";
 
       if (path === "direct") {
-        // ----- Direct MSc Pathway breakdown -----
-        const status = document.getElementById("mscStatus").value;
-        const aid = document.getElementById("mscAid").value;
-        const alumni = document.getElementById("mscAlumni").value;
+        // ----- Direct MSc -----
+        const status = document.getElementById("mscStatus").value; // scspr | intl
+        const aid    = document.getElementById("mscAid").value;    // yes | no
+        const alumni = document.getElementById("mscAlumni").value; // yes | no
 
         const base = DIRECT_BASE;
-        const scprReduction = (status === "scspr") ? (aid === "yes" ? 15000 : 5000) : 0;
-        const afterReduction = Math.max(0, base - scprReduction);
-        const alumniRebateAmt = (alumni === "yes") ? afterReduction * 0.10 : 0;
-        const total = Math.max(0, afterReduction - alumniRebateAmt);
+        let reduction = 0;
+        if (status === "scspr") {
+          reduction = (aid === "yes") ? DIRECT_SCPR_REDUCTION_AID : DIRECT_SCPR_REDUCTION_NO_AID;
+        }
+        const afterReduction = Math.max(0, base - reduction);
+        const alumniRebate   = (alumni === "yes") ? afterReduction * 0.10 : 0;
+        const total          = Math.max(0, afterReduction - alumniRebate);
 
         html = `
           <h4>Estimated Direct MSc Pathway Fee</h4>
           <table>
             <tr><td>Base Tuition Fee</td><td>$${fmt(base)}</td></tr>
-            <tr><td>SC/PR Reduction</td><td>-$${fmt(scprReduction)}</td></tr>
-            <tr><td>Alumni Rebate (10%)</td><td>-$${fmt(alumniRebateAmt)}</td></tr>
+            <tr><td>SC/PR Reduction</td><td>-$${fmt(reduction)}</td></tr>
+            <tr><td>Alumni Rebate (10%)</td><td>-$${fmt(alumniRebate)}</td></tr>
             <tr class="subtotal"><th>Total Estimated Fee</th><th>$${fmt(total)}</th></tr>
           </table>`;
       } else {
-        // ----- FlexiMasters Pathway breakdown -----
-        const status = document.getElementById("flexiStatus").value;
-        const funding = document.getElementById("flexiFunding").value;
-        const alumni = document.getElementById("flexiAlumni").value;
-        const sf = Math.max(0, parseFloat(document.getElementById("skillsFuture").value) || 0);
-        const continueMsc = document.getElementById("continueMsc").value;
+        // ----- FlexiMasters Pathway -----
+        const status      = document.getElementById("flexiStatus").value;  // scspr | intl
+        const funding     = document.getElementById("flexiFunding").value; // none | ssg70 | mces90 | etss90
+        const alumni      = document.getElementById("flexiAlumni").value;  // yes | no
+        const sf          = Math.max(0, parseFloat(document.getElementById("skillsFuture").value) || 0);
+        const continueMsc = document.getElementById("continueMsc").value;  // yes | no
+        const aidFlexi    = document.getElementById("mscAidFlexi").value;  // yes | no
 
-        // FlexiMasters stage — show full breakdown
+        // Stage 1 — FlexiMasters breakdown
         let flexiFundingName = "None / Not eligible";
-        let flexiFeeBefore = FLEXI_BASE;
-        if (funding === "ssg70") { flexiFeeBefore = FLEXI_SSG70; flexiFundingName = "SSG 70%"; }
-        else if (funding === "mces90") { flexiFeeBefore = FLEXI_MCES90; flexiFundingName = "MCES 90%"; }
-        else if (funding === "etss90") { flexiFeeBefore = FLEXI_ETSS90; flexiFundingName = "ETSS 90%"; }
-        else if (status === "intl") { flexiFundingName = "International (No funding)"; }
+        let flexiFeeBefore   = FLEXI_BASE;
+        if (funding === "ssg70")  { flexiFeeBefore = FLEXI_SSG70;  flexiFundingName = "SSG 70%"; }
+        if (funding === "mces90") { flexiFeeBefore = FLEXI_MCES90; flexiFundingName = "MCES 90%"; }
+        if (funding === "etss90") { flexiFeeBefore = FLEXI_ETSS90; flexiFundingName = "ETSS 90%"; }
+        if (funding === "none" && status === "intl") { flexiFundingName = "International (No funding)"; }
 
         const alumniCredit = (alumni === "yes") ? FLEXI_ALUMNI_CREDIT : 0;
-        const skillsFutureDeduction = Math.min(sf, 5000);
-        const flexiSubtotal = Math.max(0, flexiFeeBefore - alumniCredit - skillsFutureDeduction);
+        const sfDeduction  = Math.min(sf, 5000);
+        const flexiSubtotal = Math.max(0, flexiFeeBefore - alumniCredit - sfDeduction);
 
-        let flexiTable = `
+        let out = `
           <h4>Estimated FlexiMasters Pathway Fee</h4>
           <table>
             <tr><td>Funding Scheme (${flexiFundingName})</td><td>$${fmt(flexiFeeBefore)}</td></tr>
             <tr><td>Less: Alumni Course Credit</td><td>-$${fmt(alumniCredit)}</td></tr>
-            <tr><td>Less: SkillsFuture Credits</td><td>-$${fmt(skillsFutureDeduction)}</td></tr>
+            <tr><td>Less: SkillsFuture Credits</td><td>-$${fmt(sfDeduction)}</td></tr>
             <tr class="subtotal"><th>Subtotal — FlexiMasters Stage</th><th>$${fmt(flexiSubtotal)}</th></tr>
           </table>
         `;
 
         if (continueMsc === "yes") {
-          // Optional MSc continuation stage — breakdown
-          const mscReduction = (status === "scspr") ? MSC_PATH_SCPR_REDUCTION : 0;
+          // Stage 2 — MSc pathway (with FA option for SC/PR)
+          let mscReduction = 0;
+          if (status === "scspr") {
+            mscReduction = (aidFlexi === "yes") ? MSC_SCPR_REDUCTION_AID : MSC_SCPR_REDUCTION_NO_AID;
+          }
           const mscAfterReduction = Math.max(0, MSC_PATH_BASE - mscReduction);
-          const mscAlumniRebate = (alumni === "yes") ? mscAfterReduction * 0.10 : 0;
-          const mscSubtotal = Math.max(0, mscAfterReduction - mscAlumniRebate);
-          const grandTotal = flexiSubtotal + mscSubtotal;
+          const mscAlumniRebate   = (alumni === "yes") ? mscAfterReduction * 0.10 : 0;
+          const mscSubtotal       = Math.max(0, mscAfterReduction - mscAlumniRebate);
+          const grandTotal        = flexiSubtotal + mscSubtotal;
 
-          flexiTable += `
+          out += `
             <h4>MSc Pathway (optional continuation)</h4>
             <table>
               <tr><td>Base Tuition Fee</td><td>$${fmt(MSC_PATH_BASE)}</td></tr>
-              <tr><td>SC/PR Reduction</td><td>-$${fmt(mscReduction)}</td></tr>
+              <tr><td>SC/PR Reduction ${status==="scspr" ? (aidFlexi==="yes" ? "(Financial Aid)" : "") : "(N/A)"}</td><td>-$${fmt(mscReduction)}</td></tr>
               <tr><td>Alumni Rebate (10%)</td><td>-$${fmt(mscAlumniRebate)}</td></tr>
               <tr class="subtotal"><th>Subtotal — MSc Pathway Stage</th><th>$${fmt(mscSubtotal)}</th></tr>
             </table>
@@ -199,15 +228,14 @@
             </table>
           `;
         } else {
-          // Flexi only (no continuation)
-          flexiTable += `
+          out += `
             <table>
               <tr class="grand"><th>Estimated Total — FlexiMasters Only</th><th>$${fmt(flexiSubtotal)}</th></tr>
             </table>
           `;
         }
 
-        html = flexiTable;
+        html = out;
       }
 
       document.getElementById("nettFee").innerHTML = html + `
