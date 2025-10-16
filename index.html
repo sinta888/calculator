@@ -84,7 +84,7 @@
 
         <label for="skillsFuture">SkillsFuture Credits (S$)</label>
         <input type="number" id="skillsFuture" min="0" max="5000" value="0" />
-        <div class="muted">Applied only if self-funded & eligible; capped at S$5,000 for calculation.</div>
+        <div class="muted">For self-funded Singapore Citizens. Enter your available SkillsFuture Credit.</div>
 
         <label for="continueMsc">Do you intend to pursue the MSc after FlexiMasters?</label>
         <select id="continueMsc">
@@ -191,7 +191,7 @@
         if (funding === "none" && status === "intl") { flexiFundingName = "International (No funding)"; }
 
         const alumniCredit = (alumni === "yes") ? FLEXI_ALUMNI_CREDIT : 0;
-        const sfDeduction  = Math.min(sf, 5000);
+        const sfDeduction  = Math.max(0, sf); // no hard cap
         const flexiSubtotal = Math.max(0, flexiFeeBefore - alumniCredit - sfDeduction);
 
         let out = `
