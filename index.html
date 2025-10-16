@@ -5,86 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NTU EEE MSc Fee Calculator</title>
   <style>
-    body {
-      font-family: "Segoe UI", Arial, sans-serif;
-      background: #f8f9fa;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 640px;
-      background: #fff;
-      padding: 30px 24px;
-      margin: 60px auto;
-      border-radius: 12px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-    }
-    h3 {
-      color: #a20d33;
-      text-align: center;
-    }
-    p {
-      color: #444;
-      line-height: 1.5;
-    }
-    label {
-      display: block;
-      margin-top: 12px;
-      font-weight: 600;
-      color: #222;
-    }
-    select, input[type="number"] {
-      width: 100%;
-      padding: 8px 10px;
-      margin-top: 4px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 15px;
-    }
-    table {
-      width: 100%;
-      margin-top: 12px;
-      border-collapse: collapse;
-      font-size: 15px;
-    }
-    table td, table th {
-      border: 1px solid #ddd;
-      padding: 8px;
-    }
-    table th {
-      background: #f1f1f1;
-      color: #000;
-    }
-    .btn {
-      display: inline-block;
-      background: #d71440;
-      color: #fff;
-      padding: 8px 18px;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      font-size: 15px;
-      text-decoration: none;
-      margin-top: 16px;
-      cursor: pointer;
-    }
-    .btn:hover {
-      background: #b01035;
-    }
-    .rte {
-      margin-top: 20px;
-    }
-    .eligibility-message {
-      margin-top: 10px;
-      font-size: 13px;
-      color: #666;
-    }
+    body { font-family: "Segoe UI", Arial, sans-serif; background: #f8f9fa; margin: 0; }
+    .container { max-width: 680px; background: #fff; padding: 30px 24px; margin: 60px auto; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+    h3 { color: #a20d33; text-align: center; margin-top: 0; }
+    p { color: #444; line-height: 1.5; }
+    label { display: block; margin-top: 12px; font-weight: 600; color: #222; }
+    select, input[type="number"] { width: 100%; padding: 8px 10px; margin-top: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 15px; }
+    table { width: 100%; margin-top: 12px; border-collapse: collapse; font-size: 15px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background: #f1f1f1; color: #000; }
+    .subtotal th { background: #eef6ff; }
+    .grand th { background: #e8f7ee; }
+    .btn { display: inline-block; background: #d71440; color: #fff; padding: 8px 18px; border: none; border-radius: 6px; font-weight: bold; font-size: 15px; text-decoration: none; margin-top: 16px; cursor: pointer; }
+    .btn:hover { background: #b01035; }
+    .rte { margin-top: 20px; }
+    .eligibility-message { margin-top: 10px; font-size: 13px; color: #666; }
   </style>
 </head>
 <body>
   <div class="container">
     <form id="eeeFeeCalculator">
       <h3>EEE MSc Fee Calculator</h3>
+      <p>
+        Estimate your tuition fees for either the <strong>Direct MSc Pathway</strong>
+        or the <strong>FlexiMasters Pathway (with option to pursue MSc)</strong>.
+        All figures are <strong>inclusive of 9% GST</strong> and for reference only.
+      </p>
+
       <label for="pathway">Select Pathway</label>
       <select id="pathway">
         <option value="direct">Direct MSc Pathway</option>
@@ -153,10 +100,28 @@
   </div>
 
   <script>
+    // Constants (GST-inclusive)
+    const GST = 0.09;
+    const DIRECT_BASE = 56156.80;
+
+    // Flexi stage (funded totals)
+    const FLEXI_BASE = 28078.40;
+    const FLEXI_SSG70 = 8424.00;
+    const FLEXI_MCES90 = 3272.00;
+    const FLEXI_ETSS90 = 3272.00;
+
+    // Alumni credit for Flexi stage: 1600 pre-GST => 1744 incl GST
+    const FLEXI_ALUMNI_CREDIT = 1600 * (1 + GST); // 1744
+
+    // Self-financed MSc (modular pathway) stage
+    const MSC_PATH_BASE = 28078.40;     // same base as modular path
+    const MSC_PATH_SCPR_REDUCTION = 2500; // neutral “reduction” wording
+
     document.getElementById("pathway").addEventListener("change", function () {
       const path = this.value;
       document.getElementById("directFields").style.display = path === "direct" ? "block" : "none";
       document.getElementById("flexiFields").style.display = path === "flexi" ? "block" : "none";
+      document.getElementById("nettFee").innerHTML = "";
     });
 
     function calculateFee() {
@@ -164,68 +129,85 @@
       let html = "";
 
       if (path === "direct") {
+        // ----- Direct MSc Pathway breakdown -----
         const status = document.getElementById("mscStatus").value;
         const aid = document.getElementById("mscAid").value;
         const alumni = document.getElementById("mscAlumni").value;
 
-        let base = 56156.8;
-        let deduction = 0;
-
-        if (status === "scspr") {
-          deduction = aid === "yes" ? 15000 : 5000;
-        }
-
-        let total = base - deduction;
-        if (alumni === "yes") total *= 0.9;
+        const base = DIRECT_BASE;
+        const scprReduction = (status === "scspr") ? (aid === "yes" ? 15000 : 5000) : 0;
+        const afterReduction = Math.max(0, base - scprReduction);
+        const alumniRebateAmt = (alumni === "yes") ? afterReduction * 0.10 : 0;
+        const total = Math.max(0, afterReduction - alumniRebateAmt);
 
         html = `
           <h4>Estimated Direct MSc Pathway Fee</h4>
           <table>
-            <tr><td>Base Fee</td><td>$${base.toLocaleString()}</td></tr>
-            <tr><td>SC/PR Reduction</td><td>-$${deduction.toLocaleString()}</td></tr>
-            <tr><td>Alumni Rebate</td><td>${alumni === "yes" ? "-10%" : "–"}</td></tr>
-            <tr><th>Total Estimated Fee</th><th>$${total.toLocaleString(undefined,{minimumFractionDigits:2})}</th></tr>
+            <tr><td>Base Tuition Fee</td><td>$${fmt(base)}</td></tr>
+            <tr><td>SC/PR Reduction</td><td>-$${fmt(scprReduction)}</td></tr>
+            <tr><td>Alumni Rebate (10%)</td><td>-$${fmt(alumniRebateAmt)}</td></tr>
+            <tr class="subtotal"><th>Total Estimated Fee</th><th>$${fmt(total)}</th></tr>
           </table>`;
       } else {
+        // ----- FlexiMasters Pathway breakdown -----
         const status = document.getElementById("flexiStatus").value;
         const funding = document.getElementById("flexiFunding").value;
         const alumni = document.getElementById("flexiAlumni").value;
-        const sf = parseFloat(document.getElementById("skillsFuture").value) || 0;
+        const sf = Math.max(0, parseFloat(document.getElementById("skillsFuture").value) || 0);
         const continueMsc = document.getElementById("continueMsc").value;
 
-        const baseFlexi = 28078.4;
-        let flexiFee = baseFlexi;
+        // FlexiMasters stage — show full breakdown
+        let flexiFundingName = "None / Not eligible";
+        let flexiFeeBefore = FLEXI_BASE;
+        if (funding === "ssg70") { flexiFeeBefore = FLEXI_SSG70; flexiFundingName = "SSG 70%"; }
+        else if (funding === "mces90") { flexiFeeBefore = FLEXI_MCES90; flexiFundingName = "MCES 90%"; }
+        else if (funding === "etss90") { flexiFeeBefore = FLEXI_ETSS90; flexiFundingName = "ETSS 90%"; }
+        else if (status === "intl") { flexiFundingName = "International (No funding)"; }
 
-        if (funding === "ssg70") flexiFee = 8424;
-        else if (funding === "mces90" || funding === "etss90") flexiFee = 3272;
+        const alumniCredit = (alumni === "yes") ? FLEXI_ALUMNI_CREDIT : 0;
+        const skillsFutureDeduction = Math.min(sf, 5000);
+        const flexiSubtotal = Math.max(0, flexiFeeBefore - alumniCredit - skillsFutureDeduction);
 
-        const alumniCredit = alumni === "yes" ? 1744 : 0;
-        flexiFee -= alumniCredit;
-        flexiFee -= Math.min(sf, 5000);
-
-        let htmlBreakdown = `
+        let flexiTable = `
           <h4>Estimated FlexiMasters Pathway Fee</h4>
           <table>
-            <tr><td>FlexiMasters Stage</td><td>$${flexiFee.toLocaleString(undefined,{minimumFractionDigits:2})}</td></tr>`;
+            <tr><td>Funding Scheme (${flexiFundingName})</td><td>$${fmt(flexiFeeBefore)}</td></tr>
+            <tr><td>Less: Alumni Course Credit</td><td>-$${fmt(alumniCredit)}</td></tr>
+            <tr><td>Less: SkillsFuture Credits</td><td>-$${fmt(skillsFutureDeduction)}</td></tr>
+            <tr class="subtotal"><th>Subtotal — FlexiMasters Stage</th><th>$${fmt(flexiSubtotal)}</th></tr>
+          </table>
+        `;
 
         if (continueMsc === "yes") {
-          let mscBase = 28078.4;
-          let mscDeduction = 0;
-          if (status === "scspr") mscDeduction = 2500;
-          let mscFee = mscBase - mscDeduction;
-          if (alumni === "yes") mscFee *= 0.9;
+          // Optional MSc continuation stage — breakdown
+          const mscReduction = (status === "scspr") ? MSC_PATH_SCPR_REDUCTION : 0;
+          const mscAfterReduction = Math.max(0, MSC_PATH_BASE - mscReduction);
+          const mscAlumniRebate = (alumni === "yes") ? mscAfterReduction * 0.10 : 0;
+          const mscSubtotal = Math.max(0, mscAfterReduction - mscAlumniRebate);
+          const grandTotal = flexiSubtotal + mscSubtotal;
 
-          const total = flexiFee + mscFee;
-
-          htmlBreakdown += `
-            <tr><td>MSc Pathway (optional continuation)</td><td>$${mscFee.toLocaleString(undefined,{minimumFractionDigits:2})}</td></tr>
-            <tr><th>Total Estimated Fee (FlexiMasters + MSc)</th><th>$${total.toLocaleString(undefined,{minimumFractionDigits:2})}</th></tr>`;
+          flexiTable += `
+            <h4>MSc Pathway (optional continuation)</h4>
+            <table>
+              <tr><td>Base Tuition Fee</td><td>$${fmt(MSC_PATH_BASE)}</td></tr>
+              <tr><td>SC/PR Reduction</td><td>-$${fmt(mscReduction)}</td></tr>
+              <tr><td>Alumni Rebate (10%)</td><td>-$${fmt(mscAlumniRebate)}</td></tr>
+              <tr class="subtotal"><th>Subtotal — MSc Pathway Stage</th><th>$${fmt(mscSubtotal)}</th></tr>
+            </table>
+            <table>
+              <tr class="grand"><th>Estimated Total — FlexiMasters Pathway</th><th>$${fmt(grandTotal)}</th></tr>
+            </table>
+          `;
         } else {
-          htmlBreakdown += `<tr><th>Total Estimated Fee (FlexiMasters only)</th><th>$${flexiFee.toLocaleString(undefined,{minimumFractionDigits:2})}</th></tr>`;
+          // Flexi only (no continuation)
+          flexiTable += `
+            <table>
+              <tr class="grand"><th>Estimated Total — FlexiMasters Only</th><th>$${fmt(flexiSubtotal)}</th></tr>
+            </table>
+          `;
         }
 
-        htmlBreakdown += `</table>`;
-        html = htmlBreakdown;
+        html = flexiTable;
       }
 
       document.getElementById("nettFee").innerHTML = html + `
@@ -233,6 +215,8 @@
           *Figures are for reference only, inclusive of 9% GST. Actual payable amounts may vary based on funding eligibility and NTU’s prevailing fee structure.
         </div>`;
     }
+
+    function fmt(n) { return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
   </script>
 </body>
 </html>
